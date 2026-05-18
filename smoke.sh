@@ -11,6 +11,10 @@
 # - lib/onboarding.js exports createWizard
 # - index.html carries a Content-Security-Policy meta tag
 # - lib/wordlist.js carries the full 2048-word BIP-39 array
+#
+# M2 gates (added when M2 lands):
+# - lib/sigv4.js exports signRequest
+# - lib/bucket.js exports signedHead + corsPreflight + endpoints
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -51,4 +55,16 @@ if [[ "$word_count" -ne 256 ]]; then
   exit 1
 fi
 
-echo "OK: crate (M1 onboarding shell — LICENSE AGPL-3.0, CSP set, createWizard exported, BIP-39 wordlist complete, SPDX headers in lib/)"
+# --- M2 checks --------------------------------------------------------
+
+if ! grep -qE "^export (async )?function signRequest" lib/sigv4.js; then
+  echo "FAIL: lib/sigv4.js missing signRequest export"; exit 1
+fi
+
+for sym in signedHead corsPreflight endpoints unauthHead; do
+  if ! grep -qE "^export (async )?function ${sym}\b|^export const ${sym}\b" lib/bucket.js; then
+    echo "FAIL: lib/bucket.js missing $sym export"; exit 1
+  fi
+done
+
+echo "OK: crate (M2 real R2 bucket connection — sig-v4 + bucket client + CSP + createWizard + BIP-39 wordlist + AGPL-3.0)"
