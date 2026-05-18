@@ -3,31 +3,361 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.r2.cloudflarestorage.com https://*.backblazeb2.com https://*.your-objectstorage.com https://*.amazonaws.com; img-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none';"
+    />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#0a0a0a" />
+    <meta name="color-scheme" content="dark" />
     <title>Crate — personal cloud folder</title>
     <style>
-      body {
-        background: #0a0a0a;
-        color: #e5e5e5;
-        font-family: system-ui, -apple-system, sans-serif;
-        margin: 0;
-        padding: 2rem;
+      :root {
+        /* Design tokens — verbatim from crate-browser-handoff-v1.0.md
+           §"Design tokens + icons" lines 184–201. */
+        --bg: #0a0a0a;
+        --surface: #141414;
+        --surface-2: #1c1c1c;
+        --border: #262626;
+        --border-strong: #3a3a3a;
+        --text: #e5e5e5;
+        --muted: #737373;
+        --muted-2: #525252;
+        --accent: #fafafa;
+        --ok: #4ade80;
+        --warn: #fbbf24;
+        --error: #f87171;
+        --link: #93c5fd;
+        --tap: 44px;
+        --radius: 8px;
+        --gap: 16px;
+        --font: system-ui, -apple-system, sans-serif;
+        --mono: ui-monospace, "SF Mono", Menlo, monospace;
       }
-      main { max-width: 32rem; margin: 0 auto; }
-      h1 { font-weight: 400; letter-spacing: -0.02em; }
-      p { color: #737373; }
-      code { background: #141414; padding: 0.1em 0.3em; border-radius: 3px; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+      * { box-sizing: border-box; }
+      html, body { background: var(--bg); color: var(--text); }
+      body {
+        margin: 0;
+        font-family: var(--font);
+        font-size: 16px;
+        line-height: 1.5;
+        min-height: 100dvh;
+      }
+      #app {
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        min-height: 100dvh;
+        max-width: 40rem;
+        margin: 0 auto;
+        padding: 0 var(--gap);
+      }
+      /* Progress -------------------------------------------------- */
+      #progress { padding: 1rem 0 0.5rem; }
+      .progress-steps {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem 0.75rem;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        font-size: 0.85rem;
+        color: var(--muted-2);
+      }
+      .progress-step.active { color: var(--accent); font-weight: 600; }
+      .progress-step.done { color: var(--muted); }
+      .progress-compact { display: none; }
+      .progress-compact progress {
+        width: 100%;
+        height: 4px;
+        -webkit-appearance: none;
+        appearance: none;
+        border: 0;
+        background: var(--surface);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+      .progress-compact progress::-webkit-progress-bar { background: var(--surface); }
+      .progress-compact progress::-webkit-progress-value { background: var(--accent); }
+      .progress-compact progress::-moz-progress-bar { background: var(--accent); }
+      .progress-label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 0.25rem; }
+      @media (max-width: 640px) {
+        .progress-steps { display: none; }
+        .progress-compact { display: block; }
+      }
+      /* Wizard root ----------------------------------------------- */
+      #wizard-root {
+        padding: 0.5rem 0 5rem;
+        outline: none;
+      }
+      .stage {
+        display: flex;
+        flex-direction: column;
+        gap: var(--gap);
+      }
+      .stage h1, .stage h2 {
+        font-weight: 500;
+        letter-spacing: -0.02em;
+        margin: 0;
+        outline: none;
+      }
+      .stage h1 { font-size: 2rem; }
+      .stage h2 { font-size: 1.5rem; }
+      .lead { font-size: 1.05rem; color: var(--text); margin: 0; }
+      p { margin: 0; color: var(--text); }
+      .muted { color: var(--muted); }
+      .small { font-size: 0.85rem; }
+      .stage-divider {
+        border: 0;
+        border-top: 1px solid var(--border);
+        margin: 0.5rem 0;
+      }
+      .stage-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+      }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.75rem;
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+      }
+      .field label {
+        font-size: 0.9rem;
+        color: var(--muted);
+      }
+      .field-help { margin: 0; font-size: 0.85rem; }
+      .field-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: var(--gap);
+      }
+      .confirm-cell {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+      /* Inputs + buttons ----------------------------------------- */
+      .input {
+        min-height: var(--tap);
+        background: var(--surface);
+        color: var(--text);
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius);
+        padding: 0 0.85rem;
+        font-family: var(--font);
+        font-size: 16px;
+        width: 100%;
+      }
+      .input:focus-visible {
+        outline: 2px solid var(--link);
+        outline-offset: 2px;
+        border-color: var(--link);
+      }
+      .input.mono { font-family: var(--mono); font-size: 14px; }
+      .input.input-narrow { max-width: 12rem; }
+      .input.input-ok { border-color: var(--ok); }
+      .input.input-fail { border-color: var(--error); }
+      .btn {
+        min-height: var(--tap);
+        padding: 0 1.25rem;
+        border-radius: var(--radius);
+        border: 1px solid var(--border-strong);
+        font-family: var(--font);
+        font-size: 0.95rem;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+        transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+      }
+      .btn:focus-visible {
+        outline: 2px solid var(--link);
+        outline-offset: 2px;
+      }
+      .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+      .btn-primary {
+        background: var(--accent);
+        color: var(--bg);
+        border-color: var(--accent);
+      }
+      .btn-primary:hover:not(:disabled) { background: #e5e5e5; }
+      .btn-secondary {
+        background: var(--surface);
+        color: var(--text);
+        border-color: var(--border-strong);
+      }
+      .btn-secondary:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-2); }
+      .btn-block { width: 100%; }
+      .deep-link {
+        color: var(--link);
+      }
+      .copy-btn.copy-ok { border-color: var(--ok); color: var(--ok); }
+      .copy-btn.copy-fail { border-color: var(--error); color: var(--error); }
+      /* Pills ---------------------------------------------------- */
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        height: 32px;
+        padding: 0 0.8rem;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        background: var(--surface);
+        color: var(--muted);
+        border: 1px solid var(--border);
+      }
+      .pill-idle { color: var(--muted); }
+      .pill-checking { color: var(--warn); border-color: var(--warn); }
+      .pill-ok { color: var(--ok); border-color: var(--ok); }
+      .pill-fail { color: var(--error); border-color: var(--error); }
+      /* Code + recovery grid ------------------------------------- */
+      code {
+        background: var(--surface);
+        padding: 0.1em 0.35em;
+        border-radius: 4px;
+        font-family: var(--mono);
+        font-size: 0.92em;
+      }
+      .code-block {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 0.9rem 1rem;
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 13px;
+        overflow-x: auto;
+        white-space: pre;
+        color: var(--text);
+      }
+      .code-block:focus-visible {
+        outline: 2px solid var(--link);
+        outline-offset: 2px;
+      }
+      .recovery-grid {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.5rem;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 0.9rem;
+      }
+      @media (min-width: 640px) {
+        .recovery-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+      }
+      .recovery-word {
+        display: flex;
+        align-items: baseline;
+        gap: 0.35rem;
+        font-family: var(--mono);
+        font-size: 14px;
+      }
+      .recovery-index { color: var(--muted-2); font-size: 11px; min-width: 1.6em; text-align: right; }
+      .recovery-text { color: var(--text); }
+      /* Meter ---------------------------------------------------- */
+      .meter {
+        height: 6px;
+        background: var(--surface);
+        border-radius: 3px;
+        overflow: hidden;
+      }
+      .meter-fill {
+        height: 100%;
+        width: 0;
+        background: var(--muted-2);
+        transition: width 200ms ease, background 200ms ease;
+      }
+      .meter-fill.meter-0 { background: var(--error); }
+      .meter-fill.meter-1 { background: var(--error); }
+      .meter-fill.meter-2 { background: var(--warn); }
+      .meter-fill.meter-3 { background: var(--ok); }
+      .meter-fill.meter-4 { background: var(--ok); }
+      /* Nav footer ----------------------------------------------- */
+      #wizard-nav {
+        position: sticky;
+        bottom: 0;
+        background: var(--bg);
+        border-top: 1px solid var(--border);
+        padding: 0.75rem 0 calc(0.75rem + env(safe-area-inset-bottom));
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+      }
+      /* Live region (visually hidden, screen-reader only) -------- */
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+      a { color: var(--link); }
+      hr { border: 0; border-top: 1px solid var(--border); }
+      noscript {
+        display: block;
+        padding: 2rem;
+        text-align: center;
+        color: var(--warn);
+      }
     </style>
   </head>
   <body>
-    <main>
-      <h1>Crate</h1>
-      <p>M0 skeleton — the onboarding wizard, encryption layer, and folder UI will land in M1–M4. See <code>docs/README.md</code>.</p>
+    <noscript>
+      Crate needs JavaScript to run. Please enable it.
+    </noscript>
+    <main id="app">
+      <header id="progress" aria-label="Onboarding progress"></header>
+      <section id="wizard-root" tabindex="-1"></section>
+      <footer id="wizard-nav" aria-label="Wizard navigation">
+        <button type="button" class="btn btn-secondary" data-nav="back" disabled>← Back</button>
+        <button type="button" class="btn btn-primary" data-nav="next" disabled>Next →</button>
+      </footer>
     </main>
+    <div id="live-region" role="status" aria-live="polite" class="sr-only"></div>
+    <!--
+      zxcvbn-ts as UMD globals on window.zxcvbnts. Used by lib/entropy.js.
+      Loaded as classic scripts (not modules) because the upstream
+      packages publish UMD bundles; the ESM build has per-package json
+      shards that don't resolve cleanly without a bundler. See
+      lib/vendor/LICENSES.md.
+    -->
+    <script src="./lib/vendor/zxcvbn-ts/core.umd.min.js"></script>
+    <script src="./lib/vendor/zxcvbn-ts/language-common.umd.min.js"></script>
+    <script src="./lib/vendor/zxcvbn-ts/language-en.umd.min.js"></script>
     <script type="module">
       import { Crate } from "./lib/crate.js";
-      window.__CRATE__ = { Crate };
+      import { createWizard } from "./lib/onboarding.js";
+      const root = document.getElementById("wizard-root");
+      const liveRegion = document.getElementById("live-region");
+      const wizard = createWizard({
+        root,
+        liveRegion,
+        onComplete: (snapshot) => {
+          // M1: just log; the M2+ pipeline will pick up the snapshot to
+          // bootstrap the real bucket connection.
+          console.info("onboarding complete", snapshot);
+        },
+      });
+      window.__CRATE__ = { Crate, wizard };
+      wizard.init();
     </script>
   </body>
 </html>
