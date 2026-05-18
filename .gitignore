@@ -1,0 +1,8 @@
+# Local working notes (mirrors private-mesh convention).
+/plan/
+
+# OS noise
+.DS_Store
+
+# Editor noise
+*.swp
