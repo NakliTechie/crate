@@ -1,6 +1,6 @@
 # Crate docs
 
-Crate is a personal cloud folder built on the NakliTechie Private Mesh fabric. See the [vision and roadmap spec](../../private-mesh/docs/specs/crate-vision-and-roadmap-v1.0.md) for the product north star, and the [browser handoff](../../private-mesh/docs/specs/crate-browser-handoff-v1.0.md) for build conventions and per-milestone gates.
+Crate is a personal cloud folder built on the NakliTechie Private Mesh fabric. See the [browser handoff](specs/crate-browser-handoff-v1.0.md) for build conventions and per-milestone gates (lives here, with this surface). The product north star and the cross-surface pairing protocol live in the sibling `private-mesh` repo: [vision and roadmap](../../private-mesh/docs/specs/crate-vision-and-roadmap-v1.0.md), [pairing protocol](../../private-mesh/docs/specs/crate-pairing-protocol-v1.0.md).
 
 ## Milestones
 
