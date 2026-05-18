@@ -1,0 +1,33 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0a0a0a" />
+    <title>Crate — personal cloud folder</title>
+    <style>
+      body {
+        background: #0a0a0a;
+        color: #e5e5e5;
+        font-family: system-ui, -apple-system, sans-serif;
+        margin: 0;
+        padding: 2rem;
+      }
+      main { max-width: 32rem; margin: 0 auto; }
+      h1 { font-weight: 400; letter-spacing: -0.02em; }
+      p { color: #737373; }
+      code { background: #141414; padding: 0.1em 0.3em; border-radius: 3px; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Crate</h1>
+      <p>M0 skeleton — the onboarding wizard, encryption layer, and folder UI will land in M1–M4. See <code>docs/README.md</code>.</p>
+    </main>
+    <script type="module">
+      import { Crate } from "./lib/crate.js";
+      window.__CRATE__ = { Crate };
+    </script>
+  </body>
+</html>
