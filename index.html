@@ -342,28 +342,11 @@
     <script src="./lib/vendor/zxcvbn-ts/core.umd.min.js"></script>
     <script src="./lib/vendor/zxcvbn-ts/language-common.umd.min.js"></script>
     <script src="./lib/vendor/zxcvbn-ts/language-en.umd.min.js"></script>
-    <script type="module">
-      import { Crate } from "./lib/crate.js";
-      import { createWizard } from "./lib/onboarding.js";
-      import * as bucket from "./lib/bucket.js";
-      const root = document.getElementById("wizard-root");
-      const liveRegion = document.getElementById("live-region");
-      const wizard = createWizard({
-        root,
-        liveRegion,
-        onComplete: (snapshot) => {
-          // M2: snapshot still doesn't trigger real bucket bootstrap —
-          // that's M3+ (encryption + manifest). At M2 the snapshot is
-          // just informational; the live bucket checks happen inside
-          // the wizard stages via lib/bucket.js.
-          console.info("onboarding complete", snapshot);
-        },
-      });
-      // `bucket` is exposed for the devtools smoke recipe documented at
-      // docs/README.md — lets users verify the same primitives work
-      // against Hetzner / B2 / AWS S3 without touching wizard code.
-      window.__CRATE__ = { Crate, wizard, bucket };
-      wizard.init();
-    </script>
+    <!--
+      Wizard entrypoint is loaded from a same-origin file, NOT inline,
+      because the CSP `script-src 'self'` blocks inline scripts. The
+      module wires `window.__CRATE__` and calls `wizard.init()`.
+    -->
+    <script src="./lib/entrypoint.js" type="module"></script>
   </body>
 </html>
