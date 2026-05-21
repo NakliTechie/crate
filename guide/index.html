@@ -1,0 +1,902 @@
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Crate — User Guide</title>
+<meta name="description" content="Walk-through guide for Crate: a personal cloud folder, encrypted in your browser, in a bucket you own.">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #141414;
+    --surface-2: #1c1c1c;
+    --surface-3: #232323;
+    --border: #262626;
+    --border-strong: #3a3a3a;
+    --text: #e5e5e5;
+    --muted: #737373;
+    --muted-2: #525252;
+    --accent: #fafafa;
+    --ok: #4ade80;
+    --warn: #fbbf24;
+    --error: #f87171;
+    --link: #93c5fd;
+    --tap: 44px;
+    --radius: 8px;
+    --gap: 16px;
+    --font: system-ui, -apple-system, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { background: var(--bg); color: var(--text); }
+  body {
+    margin: 0; font-family: var(--font); font-size: 16px; line-height: 1.55;
+    min-height: 100dvh;
+  }
+  a { color: var(--link); }
+  a:hover { text-decoration: underline; }
+  code { font-family: var(--mono); background: var(--surface); padding: 0.08em 0.35em; border-radius: 4px; font-size: 0.92em; }
+  pre.code-block {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 0.9rem 1rem; margin: 0.5rem 0; font-family: var(--mono); font-size: 13px;
+    overflow-x: auto; white-space: pre; color: var(--text);
+  }
+  hr { border: 0; border-top: 1px solid var(--border); margin: 2rem 0; }
+
+  .layout {
+    display: grid; grid-template-columns: 1fr; max-width: 980px; margin: 0 auto;
+    padding: 2rem 1rem 4rem;
+  }
+  @media (min-width: 900px) {
+    .layout { grid-template-columns: 220px 1fr; gap: 2.5rem; padding: 2.5rem 2rem 5rem; }
+  }
+  .toc {
+    position: sticky; top: 1rem; align-self: start;
+    font-size: 0.9rem;
+    display: none;
+  }
+  @media (min-width: 900px) { .toc { display: block; } }
+  .toc-title { color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem; }
+  .toc ol { list-style: none; padding: 0; margin: 0; counter-reset: section; }
+  .toc li { counter-increment: section; padding: 0.18rem 0; }
+  .toc li::before { content: counter(section) ". "; color: var(--muted-2); }
+  .toc a { text-decoration: none; color: var(--muted); }
+  .toc a:hover { color: var(--text); }
+
+  header.hero { margin-bottom: 2.5rem; }
+  .eyebrow { color: var(--muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 0.6rem; }
+  h1 { font-size: 2.1rem; font-weight: 500; margin: 0 0 0.5rem; letter-spacing: -0.02em; line-height: 1.15; }
+  .lead { color: var(--muted); font-size: 1.05rem; margin: 0 0 1.5rem; max-width: 60ch; }
+  h2 { font-size: 1.4rem; font-weight: 500; margin: 3rem 0 0.4rem; letter-spacing: -0.01em; }
+  h2 .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--surface); border: 1px solid var(--border-strong);
+    border-radius: 50%; width: 1.7em; height: 1.7em; font-size: 0.85em;
+    color: var(--muted); margin-right: 0.6rem; vertical-align: -0.05em;
+  }
+  h3 { font-size: 1.05rem; font-weight: 500; margin: 1.8rem 0 0.4rem; }
+  p { margin: 0 0 0.8rem; max-width: 64ch; }
+  p.muted { color: var(--muted); }
+  ul, ol { margin: 0 0 0.8rem; padding-left: 1.2rem; }
+  ul li, ol li { margin-bottom: 0.3rem; max-width: 62ch; }
+  strong { font-weight: 500; color: var(--text); }
+
+  /* Callout boxes */
+  .callout {
+    border-left: 3px solid var(--link);
+    background: var(--surface);
+    padding: 0.7rem 1rem;
+    margin: 0.8rem 0;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    font-size: 0.95rem;
+  }
+  .callout.warn { border-left-color: var(--warn); }
+  .callout.ok { border-left-color: var(--ok); }
+  .callout.error { border-left-color: var(--error); }
+  .callout-label {
+    font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--link); margin-right: 0.4rem;
+  }
+  .callout.warn .callout-label { color: var(--warn); }
+  .callout.ok .callout-label { color: var(--ok); }
+  .callout.error .callout-label { color: var(--error); }
+
+  /* Screen mockup container — looks like a browser-tab framing */
+  .screen {
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    background: var(--surface);
+    overflow: hidden;
+    margin: 1rem 0 1.5rem;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  }
+  .screen-chrome {
+    background: var(--surface-2);
+    padding: 0.5rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.78rem; color: var(--muted);
+  }
+  .screen-dots { display: flex; gap: 0.3rem; }
+  .screen-dots span {
+    width: 0.6rem; height: 0.6rem; border-radius: 50%;
+    background: var(--surface-3);
+  }
+  .screen-url {
+    flex: 1; background: var(--surface-3); border-radius: 4px;
+    padding: 0.18rem 0.6rem; text-align: center; font-family: var(--mono);
+    font-size: 0.78rem; color: var(--muted);
+  }
+  .screen-body {
+    padding: 1.5rem 1.2rem;
+    min-height: 320px;
+    position: relative;
+  }
+  .screen-body.tight { padding: 1.2rem; min-height: 0; }
+
+  /* Mock wizard progress strip */
+  .mock-progress {
+    font-size: 0.78rem; color: var(--muted-2);
+    display: flex; gap: 0.6rem; margin-bottom: 1.2rem; flex-wrap: wrap;
+  }
+  .mock-progress .step.current { color: var(--text); font-weight: 500; }
+
+  /* Mock wizard heading */
+  .mock-stage h2 { font-size: 1.3rem; margin: 0 0 0.4rem; font-weight: 500; }
+  .mock-stage .muted { color: var(--muted); font-size: 0.92rem; margin-bottom: 1rem; }
+
+  /* Mock fields */
+  .mock-field { margin-bottom: 0.9rem; }
+  .mock-label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 0.25rem; }
+  .mock-input {
+    width: 100%; max-width: 100%;
+    background: var(--bg); border: 1px solid var(--border-strong);
+    border-radius: 6px; padding: 0.55rem 0.7rem;
+    color: var(--text); font-family: var(--font); font-size: 0.95rem;
+  }
+  .mock-input.mono { font-family: var(--mono); font-size: 0.88rem; }
+  .mock-input.placeholder { color: var(--muted-2); }
+  .mock-buttons { display: flex; gap: 0.4rem; margin-top: 0.5rem; flex-wrap: wrap; }
+  .mock-btn {
+    background: var(--surface-2); color: var(--text);
+    border: 1px solid var(--border-strong); border-radius: 6px;
+    padding: 0.45rem 0.85rem; font-size: 0.85rem;
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    cursor: default;
+  }
+  .mock-btn.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 500; }
+  .mock-btn.block { display: flex; width: 100%; justify-content: center; padding: 0.65rem; }
+  .mock-btn.danger { color: var(--error); }
+  .mock-pill {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    padding: 0.25rem 0.6rem; border-radius: 999px;
+    background: var(--surface-3); color: var(--muted);
+    font-size: 0.78rem; border: 1px solid var(--border);
+  }
+  .mock-pill.ok { background: rgba(74, 222, 128, 0.12); color: var(--ok); border-color: rgba(74, 222, 128, 0.4); }
+  .mock-pill.warn { background: rgba(251, 191, 36, 0.12); color: var(--warn); border-color: rgba(251, 191, 36, 0.4); }
+  .mock-pill.fail { background: rgba(248, 113, 113, 0.12); color: var(--error); border-color: rgba(248, 113, 113, 0.4); }
+  .mock-row { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+
+  /* Mock code block (CORS JSON, pair token, etc.) */
+  .mock-code {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+    padding: 0.65rem 0.8rem; margin: 0.4rem 0;
+    font-family: var(--mono); font-size: 0.78rem;
+    color: var(--text); overflow-x: auto;
+    white-space: pre; line-height: 1.45;
+  }
+
+  /* Mock folder UI rows */
+  .mock-folder-header {
+    display: flex; align-items: baseline; gap: 0.7rem;
+    margin-bottom: 0.4rem;
+  }
+  .mock-folder-header h2 { margin: 0; font-size: 1.3rem; font-weight: 500; }
+  .mock-folder-stats { color: var(--muted); font-size: 0.82rem; }
+  .mock-folder-toolbar {
+    display: flex; justify-content: space-between;
+    gap: 0.5rem; flex-wrap: wrap; margin: 0.6rem 0 0.5rem;
+  }
+  .mock-folder-toolbar .left, .mock-folder-toolbar .right { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+  .mock-search {
+    width: 100%; max-width: 320px; padding: 0.4rem 0.65rem;
+    background: var(--bg); border: 1px solid var(--border-strong);
+    border-radius: 6px; color: var(--muted-2); font-size: 0.88rem;
+    margin-bottom: 0.5rem;
+  }
+  .mock-breadcrumb {
+    color: var(--muted); font-size: 0.85rem; margin-bottom: 0.7rem;
+    display: flex; gap: 0.35rem;
+  }
+  .mock-breadcrumb a { color: var(--link); text-decoration: none; }
+  .mock-breadcrumb .sep { color: var(--muted-2); }
+  .mock-breadcrumb .current { color: var(--text); font-weight: 500; }
+
+  .mock-tree {
+    border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--surface-2); overflow: hidden;
+    list-style: none; padding: 0; margin: 0;
+  }
+  .mock-tree li {
+    display: grid; grid-template-columns: 28px 1fr auto auto;
+    align-items: center; gap: 0.55rem;
+    padding: 0.55rem 0.75rem; border-bottom: 1px solid var(--border);
+    font-size: 0.92rem;
+  }
+  .mock-tree li:last-child { border-bottom: 0; }
+  .mock-tree .icon { font-size: 1.2rem; line-height: 1; text-align: center; }
+  .mock-tree .main { min-width: 0; }
+  .mock-tree .name { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mock-tree .date { color: var(--muted); font-size: 0.74rem; }
+  .mock-tree .size { color: var(--muted); font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+  .mock-tree .actions { color: var(--muted); font-size: 0.85rem; }
+  .mock-tree li.dir .name { color: var(--link); font-weight: 500; }
+
+  /* Annotation arrows for guide */
+  .annot {
+    color: var(--warn); font-size: 0.8rem; font-style: italic;
+    margin: 0.3rem 0 0.8rem 0.2rem;
+    display: flex; align-items: flex-start; gap: 0.3rem;
+  }
+  .annot::before { content: "↑"; font-style: normal; flex-shrink: 0; }
+
+  /* Two-column "do this / not this" comparison */
+  .two-col {
+    display: grid; grid-template-columns: 1fr; gap: 1rem;
+    margin: 0.8rem 0;
+  }
+  @media (min-width: 700px) { .two-col { grid-template-columns: 1fr 1fr; } }
+  .two-col .col {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.8rem 1rem;
+    background: var(--surface);
+  }
+  .two-col .col h4 { margin: 0 0 0.4rem; font-size: 0.95rem; font-weight: 500; }
+  .two-col .ok-col { border-color: rgba(74, 222, 128, 0.3); }
+  .two-col .ok-col h4 { color: var(--ok); }
+  .two-col .bad-col { border-color: rgba(248, 113, 113, 0.3); }
+  .two-col .bad-col h4 { color: var(--error); }
+
+  footer {
+    color: var(--muted); font-size: 0.85rem;
+    border-top: 1px solid var(--border); margin-top: 4rem; padding-top: 1.5rem;
+    max-width: 64ch;
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <aside class="toc" aria-label="Table of contents">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#what">What you're getting</a></li>
+      <li><a href="#prepare">Before you start</a></li>
+      <li><a href="#setup">Setting up your folder</a></li>
+      <li><a href="#using">Using your folder</a></li>
+      <li><a href="#unlock">Coming back later</a></li>
+      <li><a href="#backup">Backup &amp; recovery</a></li>
+      <li><a href="#daemon">The desktop daemon</a></li>
+      <li><a href="#security">Security model</a></li>
+    </ol>
+  </aside>
+
+  <main>
+    <header class="hero">
+      <div class="eyebrow">Crate · user guide</div>
+      <h1>Your personal cloud folder, in a bucket you own.</h1>
+      <p class="lead">
+        Crate is a single web page that turns a storage bucket you control into an encrypted cloud folder. Your files are encrypted in this browser before they leave it. Nobody on the way — not Cloudflare, not us — can read them without your passphrase.
+      </p>
+      <p class="lead">
+        This guide walks you through setting up a folder for the first time, using it day-to-day, opening it again on another device, and the design choices that make all of this work.
+      </p>
+      <p class="muted" style="font-size: 0.9rem;">
+        Live at <a href="https://crate.naklios.dev">crate.naklios.dev</a>. Source on <a href="https://github.com/NakliTechie/crate">GitHub</a>. AGPL-3.0-or-later.
+      </p>
+    </header>
+
+    <!-- ===================== 1. WHAT ===================== -->
+    <section id="what">
+      <h2><span class="num">1</span>What you're getting</h2>
+      <p>
+        In one paragraph: a tab in your browser that looks like a file manager, backed by an S3-compatible bucket (Cloudflare R2 by default). Drop files in; they encrypt on your machine; the bucket stores ciphertext. Open the URL on your phone with the same passphrase; the same folder appears. Optionally run a small daemon on your laptop and the same folder lives at <code>~/crate/</code> as regular plaintext files.
+      </p>
+      <p>
+        What makes it different from Dropbox / iCloud / Google Drive:
+      </p>
+      <ul>
+        <li><strong>The bucket is yours.</strong> You pay Cloudflare directly (free tier covers most users — 10 GB storage, 1 M writes, 10 M reads per month). You can leave Crate at any time; your files stay in your bucket.</li>
+        <li><strong>The encryption is in this browser tab.</strong> The bucket owner sees only ciphertext and access patterns. We can prove that — the entire encryption layer is one file: <a href="https://github.com/NakliTechie/crate/blob/main/lib/crypto.js"><code>lib/crypto.js</code></a>.</li>
+        <li><strong>No account with us.</strong> There's nothing on a NakliTechie server. The whole app is static HTML; you could host it yourself off any static server tomorrow if our deployment vanished.</li>
+        <li><strong>One credential.</strong> Your passphrase is the only thing standing between an attacker with bucket access and your files. No recovery email, no support backdoor. That's the trade-off.</li>
+      </ul>
+    </section>
+
+    <!-- ===================== 2. BEFORE ===================== -->
+    <section id="prepare">
+      <h2><span class="num">2</span>Before you start</h2>
+      <p>You'll need three things in front of you:</p>
+      <ul>
+        <li><strong>A Cloudflare account.</strong> Free, takes 60 seconds to create at <a href="https://dash.cloudflare.com/sign-up">dash.cloudflare.com/sign-up</a>. No credit card required for the free tier.</li>
+        <li><strong>About 3 minutes.</strong> The wizard walks you through everything; the longest step is waiting for CORS to propagate.</li>
+        <li><strong>A passphrase you'll remember.</strong> Aim for 4 or more unrelated words (a "passphrase," not a password). Crate's wizard can generate one if you don't want to think one up.</li>
+      </ul>
+      <div class="callout warn">
+        <span class="callout-label">heads up</span>
+        Crate cannot recover your passphrase. If you forget it AND lose your credentials file (you'll get one at the end of setup), the files in your bucket are unreadable random bytes forever. Plan for redundancy — see <a href="#backup">section 6</a>.
+      </div>
+    </section>
+
+    <!-- ===================== 3. SETUP ===================== -->
+    <section id="setup">
+      <h2><span class="num">3</span>Setting up your folder</h2>
+      <p>
+        Open <a href="https://crate.naklios.dev">crate.naklios.dev</a> in any modern browser. You'll see the Welcome screen:
+      </p>
+
+      <div class="screen" aria-label="Welcome screen mockup">
+        <div class="screen-chrome">
+          <div class="screen-dots"><span></span><span></span><span></span></div>
+          <div class="screen-url">crate.naklios.dev</div>
+        </div>
+        <div class="screen-body">
+          <div class="mock-progress"><span class="step current">welcome</span> · <span class="step">unlock</span></div>
+          <h2 style="font-weight:500; font-size:1.6rem; margin:0 0 0.3rem;">Crate</h2>
+          <p style="color:var(--muted); margin:0 0 0.8rem; font-size:0.95rem;">A personal cloud folder. Files live in a bucket you own (Cloudflare R2 by default), encrypted before they leave your browser. No NakliTechie account, no subscription, no server on the path.</p>
+          <div style="border: 1px solid var(--warn); border-radius: 6px; padding: 0.6rem 0.8rem; margin: 0.5rem 0; font-size: 0.85rem;">
+            <strong style="color: var(--warn);">v1.0.</strong> End-to-end encrypted in this browser. The bucket owner (Cloudflare, Hetzner, B2, AWS) sees ciphertext + access patterns only.
+          </div>
+          <div style="display:flex; flex-direction:column; gap: 0.4rem; margin-top: 1rem; max-width: 420px;">
+            <button class="mock-btn block">How this works (read first — 60 seconds)</button>
+            <button class="mock-btn block primary">Set up a new folder</button>
+            <button class="mock-btn block">Unlock an existing folder</button>
+          </div>
+        </div>
+      </div>
+
+      <p>
+        For a first-time setup, click <strong>Set up a new folder</strong>. (If you've onboarded already and you're back, see <a href="#unlock">section 5</a>.) The wizard has five stages: Bucket → Credentials → CORS → Passphrase → Done.
+      </p>
+
+      <h3>Stage 1 — Bucket</h3>
+      <p>
+        Crate suggests a name like <code>crate-x7k2m9p4</code>. Copy the suggested name, then click the <strong>Open Cloudflare R2 ↗</strong> button. In Cloudflare's R2 dashboard, click <strong>Create bucket</strong>, paste the name, leave region on <em>Automatic</em>, click <strong>Create</strong>. Come back to the Crate tab. Paste your Cloudflare <strong>Account ID</strong> (you'll find it in the R2 sidebar) into the second field. Click <strong>Verify</strong>.
+      </p>
+
+      <div class="screen">
+        <div class="screen-chrome">
+          <div class="screen-dots"><span></span><span></span><span></span></div>
+          <div class="screen-url">crate.naklios.dev/#bucket</div>
+        </div>
+        <div class="screen-body">
+          <div class="mock-progress"><span class="step">welcome</span> · <span class="step current">bucket</span> · <span class="step">credentials</span> · <span class="step">cors</span> · <span class="step">passphrase</span> · <span class="step">done</span></div>
+          <div class="mock-stage">
+            <h2>Create your bucket on Cloudflare R2</h2>
+            <p class="muted">Open the dashboard, click Create bucket, name it the same as below.</p>
+            <div class="mock-row" style="margin-bottom: 0.8rem;">
+              <button class="mock-btn">Open Cloudflare R2 ↗</button>
+            </div>
+            <div class="mock-field">
+              <label class="mock-label">Bucket name</label>
+              <input class="mock-input mono" value="crate-x7k2m9p4" readonly>
+            </div>
+            <div class="mock-field">
+              <label class="mock-label">Cloudflare Account ID</label>
+              <input class="mock-input mono placeholder" value="62231b040ed00c96cdcf3a4541eab958" readonly>
+            </div>
+            <div class="mock-row">
+              <button class="mock-btn primary">Verify</button>
+              <span class="mock-pill ok"><span style="font-size:0.5rem;">●</span> ✓ Bucket reachable</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3>Stage 2 — Credentials</h3>
+      <p>
+        Crate now needs an API token scoped to <em>only</em> this bucket. Click <strong>Open R2 API Tokens ↗</strong> → <strong>Create API Token</strong>:
+      </p>
+      <ul>
+        <li>Permission: <strong>Object Read &amp; Write</strong></li>
+        <li>Specify bucket: pick the one you just made (don't leave it at "All buckets")</li>
+        <li>TTL: leave blank, or pick a long horizon</li>
+      </ul>
+      <p>
+        Cloudflare shows you the <strong>Access Key ID</strong> + <strong>Secret Access Key</strong> ONCE. Copy both before you close the page — Cloudflare will not show the secret again. Paste them into the wizard. Click <strong>Verify</strong>.
+      </p>
+
+      <div class="screen">
+        <div class="screen-chrome">
+          <div class="screen-dots"><span></span><span></span><span></span></div>
+          <div class="screen-url">crate.naklios.dev/#credentials</div>
+        </div>
+        <div class="screen-body">
+          <div class="mock-progress"><span class="step">welcome</span> · <span class="step">bucket</span> · <span class="step current">credentials</span> · <span class="step">cors</span> · <span class="step">passphrase</span> · <span class="step">done</span></div>
+          <div class="mock-stage">
+            <h2>Create an API token</h2>
+            <p class="muted">Scoped to this bucket only — Cloudflare shows the secret once.</p>
+            <button class="mock-btn" style="margin-bottom:0.8rem;">Open R2 API Tokens ↗</button>
+            <div class="mock-field">
+              <label class="mock-label">Access Key ID</label>
+              <input class="mock-input mono placeholder" value="ed40c2a8e9f1b4d3c5e7f8a9b0c1d2e3" readonly>
+            </div>
+            <div class="mock-field">
+              <label class="mock-label">Secret Access Key</label>
+              <input class="mock-input mono placeholder" value="••••••••••••••••••••••••••••••••••••••••" readonly>
+            </div>
+            <div class="mock-row">
+              <button class="mock-btn primary">Verify</button>
+              <span class="mock-pill ok"><span style="font-size:0.5rem;">●</span> ✓ Credentials accepted</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3>Stage 3 — CORS</h3>
+      <p>
+        Your browser needs explicit permission to talk to your bucket. Crate generates the exact JSON you need and gives you a direct deep-link to the right Cloudflare page (the bucket's CORS settings — not the generic R2 overview).
+      </p>
+      <ol>
+        <li>Click <strong>Copy CORS JSON</strong>.</li>
+        <li>Click <strong>Open this bucket's CORS settings ↗</strong>. A new tab opens at exactly the right page in Cloudflare. Scroll to <strong>CORS Policy</strong>, click <strong>Add CORS policy</strong>, paste, save.</li>
+        <li>Come back to the Crate tab and click <strong>Run preflight check</strong>. (If it fails immediately, wait 30 seconds — CORS changes take time to propagate — then retry.)</li>
+      </ol>
+
+      <div class="screen">
+        <div class="screen-chrome">
+          <div class="screen-dots"><span></span><span></span><span></span></div>
+          <div class="screen-url">crate.naklios.dev/#cors</div>
+        </div>
+        <div class="screen-body">
+          <div class="mock-progress"><span class="step">welcome</span> · <span class="step">bucket</span> · <span class="step">credentials</span> · <span class="step current">cors</span> · <span class="step">passphrase</span> · <span class="step">done</span></div>
+          <div class="mock-stage">
+            <h2>Configure CORS</h2>
+            <ol style="color: var(--muted); font-size: 0.92rem;">
+              <li>Click <strong style="color:var(--text);">Copy CORS JSON</strong> below.</li>
+              <li>Click <strong style="color:var(--text);">Open this bucket's CORS settings ↗</strong> — opens the right page in Cloudflare in a new tab.</li>
+              <li>Come back here and click <strong style="color:var(--text);">Run preflight check</strong>.</li>
+            </ol>
+            <pre class="mock-code">[
+  {
+    "AllowedOrigins": ["https://crate.naklios.dev"],
+    "AllowedMethods": ["GET","PUT","POST","DELETE","HEAD"],
+    "AllowedHeaders": ["*"],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3600
+  }
+]</pre>
+            <div class="mock-row" style="margin-bottom: 0.8rem;">
+              <button class="mock-btn">Copy CORS JSON</button>
+              <button class="mock-btn">Open this bucket's CORS settings ↗</button>
+            </div>
+            <div class="mock-row">
+              <button class="mock-btn primary">Run preflight check</button>
+              <span class="mock-pill ok"><span style="font-size:0.5rem;">●</span> ✓ Preflight succeeded</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout">
+        <span class="callout-label">why we ask</span>
+        The CORS JSON tells Cloudflare which web origin is allowed to talk to your bucket from a browser. It does <em>not</em> give Crate or anyone else read access to your files — it only controls headers Cloudflare sends back. The actual files are still encrypted before they ever leave your tab.
+      </div>
+
+      <h3>Stage 4 — Passphrase</h3>
+      <p>
+        Pick a passphrase. Crate measures strength with <a href="https://github.com/dropbox/zxcvbn">zxcvbn</a> and only lets you advance once you clear 70 bits of entropy. The hint card on this stage spells out exactly how to hit that bar:
+      </p>
+      <ul>
+        <li><strong>Easiest:</strong> hit <strong>Generate</strong>. 7 random dictionary words, ~77 bits. Write them down.</li>
+        <li><strong>Memorable:</strong> 5 or more unrelated common words — <code>correct-horse-battery-staple-seven</code>.</li>
+        <li><strong>Compact:</strong> 12+ random characters mixing case, digits, symbols — <code>7zL!q4Mn$ePr</code>.</li>
+        <li><strong>What doesn't work:</strong> single dictionary words (any length), <code>Password123!</code>-style, birthdays, song lyrics.</li>
+      </ul>
+
+      <div class="screen">
+        <div class="screen-chrome">
+          <div class="screen-dots"><span></span><span></span><span></span></div>
+          <div class="screen-url">crate.naklios.dev/#passphrase</div>
+        </div>
+        <div class="screen-body">
+          <div class="mock-progress"><span class="step">welcome</span> · <span class="step">bucket</span> · <span class="step">credentials</span> · <span class="step">cors</span> · <span class="step current">passphrase</span> · <span class="step">done</span></div>
+          <div class="mock-stage">
+            <h2>Pick a passphrase</h2>
+            <p class="muted">This unlocks your folder. Crate cannot recover it for you. Aim for at least <strong>70</strong> bits of entropy.</p>
+            <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.7rem 0.9rem; margin-bottom: 0.8rem; font-size: 0.88rem;">
+              <div style="font-weight: 500; margin-bottom: 0.3rem;">How to clear 70 bits — pick one:</div>
+              <ul style="margin: 0; padding-left: 1.1rem; color: var(--muted);">
+                <li><strong>Easiest: hit Generate below.</strong> 7 random dictionary words, ~77 bits.</li>
+                <li><strong>Memorable: 4+ unrelated common words</strong> — pick at least 5 for safety.</li>
+                <li><strong>Compact: 12+ random chars</strong> mixing case/digits/symbols.</li>
+              </ul>
+            </div>
+            <div class="mock-field">
+              <label class="mock-label">Passphrase</label>
+              <input class="mock-input mono" type="password" value="••••••••••••••••" readonly>
+              <div style="height: 6px; background: var(--surface-3); border-radius: 3px; margin-top: 6px; overflow: hidden;">
+                <div style="height: 100%; width: 75%; background: var(--ok);"></div>
+              </div>
+              <p class="muted" style="font-size: 0.8rem; margin: 0.3rem 0 0;">Strength: strong (78 bits)</p>
+            </div>
+            <div class="mock-field">
+              <label class="mock-label">Confirm passphrase</label>
+              <input class="mock-input mono" type="password" value="••••••••••••••••" readonly>
+              <p class="muted" style="font-size: 0.8rem; margin: 0.3rem 0 0; color: var(--ok);">✓ Match — strong enough</p>
+            </div>
+            <div class="mock-row">
+              <button class="mock-btn">Generate (7 words)</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3>Stage 5 — Done</h3>
+      <p>
+        Crate now writes a small <code>.crate/crate.json</code> + an empty manifest to your bucket. When that finishes you see:
+      </p>
+
+      <div class="screen">
+        <div class="screen-chrome">
+          <div class="screen-dots"><span></span><span></span><span></span></div>
+          <div class="screen-url">crate.naklios.dev/#done</div>
+        </div>
+        <div class="screen-body">
+          <div class="mock-progress"><span class="step">welcome</span> · <span class="step">bucket</span> · <span class="step">credentials</span> · <span class="step">cors</span> · <span class="step">passphrase</span> · <span class="step current">done</span></div>
+          <div class="mock-stage">
+            <h2>Your folder is ready</h2>
+            <p class="muted">Bucket connected. Credentials accepted. CORS configured. Passphrase set. Encrypted metadata written to the bucket.</p>
+            <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.7rem 0.9rem; margin: 0.7rem 0; font-size: 0.88rem;">
+              <div style="font-weight: 500; margin-bottom: 0.3rem;">Make future unlocks one step</div>
+              <p style="margin: 0; color: var(--muted); font-size: 0.85rem;">
+                Download a small encrypted credentials file. With this file + your passphrase, you can unlock from any device in two clicks instead of typing five strings. The file is useless without your passphrase. Keep it like a backup credential.
+              </p>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:0.4rem; margin-top:0.7rem;">
+              <button class="mock-btn block primary">Open your folder</button>
+              <button class="mock-btn block">↓ Download credentials file (recommended)</button>
+              <button class="mock-btn block">Start a new onboarding</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout warn">
+        <span class="callout-label">do this now</span>
+        Click <strong>↓ Download credentials file (recommended)</strong> before opening your folder. You'll get a small file named <code>&lt;bucket-name&gt;.crate-creds</code>. Save it the same way you'd save a backup password — 1Password, password manager, encrypted USB. Anyone with this file <em>and</em> your passphrase can read your folder; either alone is useless. Future unlocks become drop-file + type-passphrase.
+      </div>
+    </section>
+
+    <!-- ===================== 4. USING ===================== -->
+    <section id="using">
+      <h2><span class="num">4</span>Using your folder</h2>
+      <p>
+        Click <strong>Open your folder</strong> and the wizard hands off to the folder UI:
+      </p>
+
+      <div class="screen">
+        <div class="screen-chrome">
+          <div class="screen-dots"><span></span><span></span><span></span></div>
+          <div class="screen-url">crate.naklios.dev</div>
+        </div>
+        <div class="screen-body tight">
+          <div class="mock-folder-header">
+            <h2>Your Crate</h2>
+            <span class="mock-folder-stats">12 files · 47 MB · encrypted</span>
+          </div>
+          <div class="mock-folder-toolbar">
+            <div class="left">
+              <button class="mock-btn primary">⬆ Upload</button>
+              <button class="mock-btn">📁 New folder</button>
+            </div>
+            <div class="right">
+              <button class="mock-btn" title="Refresh">⟳</button>
+              <button class="mock-btn">🔐 Credentials</button>
+              <button class="mock-btn">Pair an agent</button>
+              <button class="mock-btn">Export</button>
+              <button class="mock-btn danger">🔒 Lock</button>
+            </div>
+          </div>
+          <input class="mock-search" value="Filter files in this folder…" readonly>
+          <div class="mock-breadcrumb">
+            <a href="#">Home</a> <span class="sep">›</span> <a href="#">notes</a> <span class="sep">›</span> <span class="current">2026</span>
+          </div>
+          <ul class="mock-tree">
+            <li class="dir">
+              <span class="icon">📁</span>
+              <span class="main"><div class="name">photos</div></span>
+              <span class="size">—</span>
+              <span class="actions">✎ ✕</span>
+            </li>
+            <li>
+              <span class="icon">📝</span>
+              <span class="main"><div class="name">project-notes.md</div><div class="date">May 21</div></span>
+              <span class="size">4.2 KB</span>
+              <span class="actions">👁 ↓ ✎ ⏱ ✕</span>
+            </li>
+            <li>
+              <span class="icon">🖼</span>
+              <span class="main"><div class="name">cover.png</div><div class="date">May 19</div></span>
+              <span class="size">1.3 MB</span>
+              <span class="actions">👁 ↓ ✎ ⏱ ✕</span>
+            </li>
+            <li>
+              <span class="icon">📕</span>
+              <span class="main"><div class="name">contract.pdf</div><div class="date">May 12</div></span>
+              <span class="size">230 KB</span>
+              <span class="actions">↓ ✎ ⏱ ✕</span>
+            </li>
+            <li>
+              <span class="icon">🎵</span>
+              <span class="main"><div class="name">demo-track.mp3</div><div class="date">Apr 30</div></span>
+              <span class="size">5.8 MB</span>
+              <span class="actions">↓ ✎ ⏱ ✕</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>The toolbar</h3>
+      <ul>
+        <li><strong>⬆ Upload</strong> — open a file picker, or drag files directly onto the page. They encrypt + upload one at a time.</li>
+        <li><strong>📁 New folder</strong> — empty folders are recorded as explicit events in the manifest so they survive across devices.</li>
+        <li><strong>⟳ Refresh</strong> — pulls the latest manifest from the bucket. (Sync is automatic every ~15 s; this is for impatient checks.)</li>
+        <li><strong>🔐 Credentials</strong> — re-download the encrypted <code>.crate-creds</code> file at any time. Use this if you skipped the download at setup.</li>
+        <li><strong>Pair an agent</strong> — issue a one-time pairing token to set up the desktop daemon. See <a href="#daemon">section 7</a>.</li>
+        <li><strong>Export</strong> — download all your files as a single zip (or stream to a folder on disk for larger Crates). Useful as a one-shot backup or migration tool.</li>
+        <li><strong>🔒 Lock</strong> — zero the master key, clear in-tab session state, return to the start screen. Use before leaving the laptop unattended.</li>
+      </ul>
+
+      <h3>Per-file actions</h3>
+      <p>Hover any file row. The buttons on the right reveal:</p>
+      <ul>
+        <li><strong>👁 Preview</strong> — open text or image files inline without downloading. Files larger than 50 MB show a "too large to preview, use Download" message.</li>
+        <li><strong>↓ Download</strong> — decrypt + save to your Downloads folder. Large files stream straight to a destination you pick on disk.</li>
+        <li><strong>✎ Rename</strong> — pure manifest event; the underlying ciphertext is unchanged on the bucket.</li>
+        <li><strong>⏱ History</strong> — see every change to that file: when it was created, every update + size delta, any rename, the delete if present. Read from the manifest already in memory; no network call.</li>
+        <li><strong>✕ Delete</strong> — DELETEs the object and appends a delete event. There is no trash bin in v1.</li>
+      </ul>
+
+      <h3>Search</h3>
+      <p>
+        The search box under the toolbar filters the <em>current folder</em> by basename substring, case-insensitive. Clears when you click any breadcrumb to navigate.
+      </p>
+
+      <h3>Drag-and-drop</h3>
+      <p>
+        Drag files from your desktop / Finder / Files app onto the folder area. The whole UI lights up with a "Drop to upload" overlay; release to upload. Each file is encrypted in this tab, then PUT to your bucket.
+      </p>
+
+      <h3>Mobile</h3>
+      <p>
+        The same URL works on a phone. The folder UI is responsive; actions are always visible (no hover-to-reveal on touch devices). Upload from your phone's photo picker works for images and most file types.
+      </p>
+    </section>
+
+    <!-- ===================== 5. UNLOCK ===================== -->
+    <section id="unlock">
+      <h2><span class="num">5</span>Coming back later</h2>
+      <p>
+        You closed the tab, came back tomorrow (or on your phone, or on a different laptop). Open <a href="https://crate.naklios.dev">crate.naklios.dev</a>, click <strong>Unlock an existing folder</strong>.
+      </p>
+
+      <h3>The default path — credentials file + passphrase</h3>
+      <p>
+        If you downloaded the <code>.crate-creds</code> file at first-time setup, this is two clicks:
+      </p>
+
+      <div class="screen">
+        <div class="screen-chrome">
+          <div class="screen-dots"><span></span><span></span><span></span></div>
+          <div class="screen-url">crate.naklios.dev/#unlock</div>
+        </div>
+        <div class="screen-body">
+          <div class="mock-progress"><span class="step">welcome</span> · <span class="step current">unlock</span></div>
+          <div class="mock-stage">
+            <h2>Unlock an existing folder</h2>
+            <p class="muted">Pick the credentials file you downloaded at first setup, then enter your folder passphrase. The file is useless without the passphrase.</p>
+            <div style="border: 2px dashed var(--border-strong); border-radius: 8px; padding: 1.5rem 1rem; text-align: center; background: var(--surface); margin-bottom: 0.8rem;">
+              <p style="margin: 0; color: var(--muted); font-size: 0.95rem;">
+                <span style="font-size: 1.3rem; margin-right: 0.3rem;">🔐</span>
+                Drop your <code>.crate-creds</code> file here, or click to pick it.
+              </p>
+            </div>
+            <div class="mock-field">
+              <label class="mock-label">Passphrase</label>
+              <input class="mock-input" type="password" placeholder="Your folder passphrase" disabled>
+            </div>
+            <button class="mock-btn block primary" disabled>Unlock folder</button>
+            <p class="muted" style="font-size: 0.85rem; margin-top: 0.7rem;">
+              <span style="color: var(--link); text-decoration: underline;">No file? Enter the 5 details manually.</span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <p>
+        Drag the file onto the dropzone (or click to pick it). The bucket name from the file's encrypted hint surfaces immediately:
+      </p>
+
+      <div class="screen">
+        <div class="screen-chrome">
+          <div class="screen-dots"><span></span><span></span><span></span></div>
+          <div class="screen-url">crate.naklios.dev/#unlock</div>
+        </div>
+        <div class="screen-body">
+          <div class="mock-stage">
+            <h2>Welcome back to crate-x7k2m9p4</h2>
+            <p class="muted">Enter your passphrase to reopen it.</p>
+            <div style="border: 2px solid var(--ok); border-radius: 8px; padding: 1rem; text-align: center; background: var(--surface-2); margin-bottom: 0.8rem;">
+              <p style="margin: 0; color: var(--text); font-size: 0.95rem;">
+                ✓ Loaded <strong>crate-x7k2m9p4</strong> from file.
+              </p>
+            </div>
+            <div class="mock-field">
+              <label class="mock-label">Passphrase</label>
+              <input class="mock-input" type="password" placeholder="Your folder passphrase">
+            </div>
+            <button class="mock-btn block primary">Unlock folder</button>
+          </div>
+        </div>
+      </div>
+
+      <h3>The fallback — five fields, no file</h3>
+      <p>
+        If you lost the credentials file (or you're on a brand-new device and haven't transferred it yet), click <strong>No file? Enter the 5 details manually.</strong> The unlock screen reveals the original 5-input form:
+      </p>
+      <ul>
+        <li>Bucket name</li>
+        <li>Cloudflare Account ID (32 hex characters)</li>
+        <li>Access Key (~32 chars)</li>
+        <li>Secret Access Key (~64 chars)</li>
+        <li>Folder passphrase</li>
+      </ul>
+      <p>
+        Tedious but viable — and you can re-download a fresh <code>.crate-creds</code> file from the folder UI's <strong>🔐 Credentials</strong> button once you're back in.
+      </p>
+
+      <h3>Refresh keeps you logged in</h3>
+      <p>
+        If you accidentally hit ⌘R / F5 mid-session, you don't go back to square one. The encrypted credentials blob lives in your tab's sessionStorage (passphrase-encrypted; useless without your passphrase). On reload, the wizard sees the blob and goes straight to "Welcome back to <em>name</em>. Enter your passphrase to reopen it." One field instead of five (or two).
+      </p>
+      <p>
+        The blob dies when you <strong>close the tab</strong> or click <strong>🔒 Lock</strong>. So a hard quit + relaunch goes back to the full unlock screen.
+      </p>
+    </section>
+
+    <!-- ===================== 6. BACKUP ===================== -->
+    <section id="backup">
+      <h2><span class="num">6</span>Backup &amp; recovery</h2>
+      <p>
+        <strong>Your bucket is your only copy of the files by default.</strong> If you lose access to it (account closed, accidentally deleted, ransomware on your Cloudflare account), the files are gone unless you've made a copy somewhere else. The encryption that keeps Cloudflare from reading your files also means Cloudflare can't restore them for you.
+      </p>
+      <p>Three independent redundancy options:</p>
+      <ol>
+        <li><strong>Run the desktop daemon (recommended).</strong> <code>crate-agent</code> keeps a plaintext mirror at <code>~/crate/</code> on macOS or Linux. Point Time Machine, restic, rsync, or whatever you already use at that folder. The plaintext lives on hardware you control.</li>
+        <li><strong>Mirror the bucket.</strong> <code>rclone sync r2:bucket-A r2:bucket-B</code>, or use Cloudflare's R2 → R2 replication. Ciphertext-preserving; restore = swap creds in the wizard.</li>
+        <li><strong>Export from the browser.</strong> The folder UI's <strong>Export</strong> button gives you a zip of everything. One-shot — use the daemon for recurring backups.</li>
+      </ol>
+
+      <h3>Three disaster scenarios</h3>
+
+      <div class="two-col">
+        <div class="col bad-col">
+          <h4>You lost the passphrase + the creds file</h4>
+          <p style="margin:0; color: var(--muted); font-size:0.92rem;">
+            Files are gone. There is no reset, no support email, no recovery flow.
+            Plan ahead: write the passphrase down, store the creds file somewhere safe.
+          </p>
+        </div>
+        <div class="col ok-col">
+          <h4>You lost the passphrase, but have the creds file</h4>
+          <p style="margin:0; color: var(--muted); font-size:0.92rem;">
+            Still gone — the file is encrypted with the passphrase. Same outcome as above.
+          </p>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="col ok-col">
+          <h4>You lost the creds file, but have the passphrase</h4>
+          <p style="margin:0; color: var(--muted); font-size:0.92rem;">
+            Fine. Use the 5-input manual unlock to get back in, then click 🔐 Credentials in the folder UI to download a fresh file.
+          </p>
+        </div>
+        <div class="col ok-col">
+          <h4>You lost the bucket</h4>
+          <p style="margin:0; color: var(--muted); font-size:0.92rem;">
+            Restore from whichever redundancy you set up: daemon's local folder, rclone mirror, or exported zip. Create a new bucket; same passphrase; you're back.
+          </p>
+        </div>
+      </div>
+
+      <p style="margin-top: 0.7rem;">
+        Full runbook: <a href="https://github.com/NakliTechie/crate/blob/main/docs/backup.md"><code>docs/backup.md</code></a>.
+      </p>
+    </section>
+
+    <!-- ===================== 7. DAEMON ===================== -->
+    <section id="daemon">
+      <h2><span class="num">7</span>The desktop daemon</h2>
+      <p>
+        <a href="https://github.com/NakliTechie/crate-agent"><code>crate-agent</code></a> is a small Go binary that keeps a folder on your laptop in sync with your Crate. It runs as a background service; you edit files in <code>~/crate/</code> with any tool (vim, VS Code, drag-drop in Finder), the daemon encrypts + uploads them. Browser-side changes download + decrypt to the same folder.
+      </p>
+      <p>
+        The daemon never holds your bucket credentials — it pairs with the browser via a one-time token and talks to a transport (the Hub bucket-proxy), not directly to R2.
+      </p>
+
+      <h3>Install</h3>
+      <pre class="code-block">
+# macOS (Apple Silicon)
+curl -L -o crate-agent https://github.com/NakliTechie/crate-agent/releases/latest/download/crate-agent-darwin-arm64
+chmod +x crate-agent && sudo mv crate-agent /usr/local/bin/
+
+# macOS (Intel)
+curl -L -o crate-agent https://github.com/NakliTechie/crate-agent/releases/latest/download/crate-agent-darwin-amd64
+chmod +x crate-agent && sudo mv crate-agent /usr/local/bin/
+
+# Linux (x86_64)
+curl -L -o crate-agent https://github.com/NakliTechie/crate-agent/releases/latest/download/crate-agent-linux-amd64
+chmod +x crate-agent && sudo mv crate-agent /usr/local/bin/
+
+# Linux (ARM64)
+curl -L -o crate-agent https://github.com/NakliTechie/crate-agent/releases/latest/download/crate-agent-linux-arm64
+chmod +x crate-agent && sudo mv crate-agent /usr/local/bin/
+</pre>
+      <p>(Windows: v1.x roadmap.)</p>
+
+      <h3>Pair + start</h3>
+      <ol>
+        <li>In your Crate folder UI, click <strong>Pair an agent</strong>. A modal shows a <code>CRATE-PAIR-…</code> token + QR code with a 15-minute countdown.</li>
+        <li>Copy the token to clipboard.</li>
+        <li>In a terminal: <code>crate-agent pair</code>. Paste the token. Type your folder passphrase.</li>
+        <li><code>crate-agent doctor</code> to verify the install.</li>
+        <li><code>crate-agent start</code> to run in the foreground, or <code>crate-agent install-service</code> to install as a launchd / systemd-user unit that starts at login.</li>
+      </ol>
+      <p>
+        Once running, <code>~/crate/</code> is bidirectional with the browser within ~15 seconds. Full daemon docs in the <a href="https://github.com/NakliTechie/crate-agent">crate-agent repo</a>.
+      </p>
+    </section>
+
+    <!-- ===================== 8. SECURITY ===================== -->
+    <section id="security">
+      <h2><span class="num">8</span>Security model</h2>
+      <p>
+        The short version of <a href="https://github.com/NakliTechie/crate/blob/main/docs/encryption-model.md">the full crypto design</a>:
+      </p>
+      <ul>
+        <li><strong>Master key</strong> = PBKDF2-SHA256 of your passphrase + a 16-byte random salt stored in <code>.crate/crate.json</code>. 600,000 iterations (OWASP 2023 recommendation). Lives only in this browser tab's memory.</li>
+        <li><strong>Per-file data keys</strong> = fresh 32 random bytes per file, wrapped by AES-256-GCM under the master key. Sealed with the file's UUID as additional-authenticated-data so a row-swap attack on the bucket fails authentication.</li>
+        <li><strong>Payload sealing</strong> = AES-256-GCM with the per-file data key + a fresh 12-byte IV per write.</li>
+        <li><strong>Signed manifest</strong> = JSONL log of every event (<code>create</code>, <code>update</code>, <code>delete</code>, <code>move</code>, <code>mkdir</code>), each event HMAC-SHA256-signed with the master key; each event carries the previous event's signature → tamper-evident chain. The entire manifest is then encrypted at rest.</li>
+        <li><strong>Credentials file</strong> = the four bucket strings (name, account ID, access key, secret key) bundled into a JSON envelope encrypted with AES-256-GCM under a key derived by PBKDF2-SHA256(passphrase, salt). Independent salt from the bucket's salt; useless without the passphrase.</li>
+        <li><strong>Concurrent-write safety</strong> = ETag-conditional PUT (<code>If-Match</code>) with replay-on-412. Two tabs PUTting at the same time → second one gets 412 → re-GET, splice pending events on top, retry up to 3 times.</li>
+      </ul>
+      <h3>What we explicitly don't protect against</h3>
+      <ul>
+        <li><strong>Compromise of your browser tab</strong> while it's unlocked. If a Chrome extension can read your tab's memory, it can read your master key + every file you touch. Same as 1Password and other client-side crypto apps. Use a clean profile if this matters.</li>
+        <li><strong>Side-channel access patterns.</strong> Cloudflare sees the number of objects you have, their sizes, and when you touch them. They cannot see the content.</li>
+        <li><strong>Future cryptanalytic breaks of AES-256-GCM or PBKDF2-SHA256.</strong> If either falls, every app using them falls together. We'd migrate via a v2 wire format.</li>
+      </ul>
+      <p>
+        Crate is AGPL-3.0-or-later. The entire encryption layer is <a href="https://github.com/NakliTechie/crate/blob/main/lib/crypto.js"><code>lib/crypto.js</code></a>. Every network call lives in <a href="https://github.com/NakliTechie/crate/blob/main/lib/bucket.js"><code>lib/bucket.js</code></a>. The credentials-file format is <a href="https://github.com/NakliTechie/crate/blob/main/lib/credsfile.js"><code>lib/credsfile.js</code></a>. There is no telemetry, no analytics, no backend.
+      </p>
+    </section>
+
+    <footer>
+      <p>
+        <strong>Crate</strong> — open source, AGPL-3.0-or-later. Live at <a href="https://crate.naklios.dev">crate.naklios.dev</a>. Source on <a href="https://github.com/NakliTechie/crate">GitHub</a>. Daemon at <a href="https://github.com/NakliTechie/crate-agent">NakliTechie/crate-agent</a>.
+      </p>
+      <p>
+        Questions, bugs, suggestions: <a href="https://github.com/NakliTechie/crate/issues">open an issue</a>.
+      </p>
+    </footer>
+
+  </main>
+</div>
+</body>
+</html>

@@ -35,6 +35,8 @@ Same app on both.
 
 About 3 minutes start to finish. The Welcome page has a **How this works (read first)** button with step-by-step instructions.
 
+Full walk-through with screenshots of every stage: [`guide/`](guide/index.html) — also live at [crate.naklios.dev/guide/](https://crate.naklios.dev/guide/).
+
 ## Unlocking
 
 The credentials-file path is the default. There's a fallback for users who lost the file:
