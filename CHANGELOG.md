@@ -4,6 +4,21 @@ All notable changes to Crate. Format loosely follows [Keep a Changelog](https://
 
 ## [Unreleased]
 
+### Security — patches from the 2026-05 audit
+
+OpenAI Codex (gpt-5.5) reviewed the crypto + sync paths under a defined threat model and turned up four High + one Medium + one Low finding. All quick fixes landed:
+
+- **H1 — Object ciphertext rollback** ([`3699c86`](https://github.com/NakliTechie/crate/commit/3699c86)). `Crate.read`, `FolderUI.handleDownload`, `FolderUI.handlePreview` now verify the object body's leading IV against the manifest-signed `content_iv` (constant-time compare) before decrypting. Closes the "bucket attacker replays older valid ciphertext for the same UUID" path.
+- **H3 — `Crate.open` lastFlushedEventCount init** ([`3699c86`](https://github.com/NakliTechie/crate/commit/3699c86)). Constructor now derives the initial high-water mark from `manifest.events.length` instead of leaving it undefined.
+- **H4 — SyncClient erasing unflushed events** ([`3699c86`](https://github.com/NakliTechie/crate/commit/3699c86)). `_pollManifest` now skips the wholesale event-replace when local has unflushed events; the next `_flushManifest` 412 retry reconciles correctly.
+- **M1 — Manifest signatures not verified on load** ([`3699c86`](https://github.com/NakliTechie/crate/commit/3699c86)). `Manifest.loadFromBytes` calls `verify(masterKey)` after parsing.
+
+Full report: [`docs/security-review-2026-05-codex.md`](docs/security-review-2026-05-codex.md).
+
+### Deferred — manifest rollback / truncation (H2)
+
+A bucket-only attacker can serve an older valid `.crate/manifest.jsonl.enc` and have it accepted as current state. AES-GCM and the prev_sig chain both still pass — the manifest's older prefix really was valid once. Real fix requires a persistent "last-seen tail" anchor that survives across browser + daemon and across devices for the same Crate. Sketched design: each client stores `{count, lastSig}` in sessionStorage (or daemon state.db) and rejects loaded manifests that don't extend the anchor; multi-device coordination uses the Hub bucket-proxy's `?since=` cursor (not yet implemented). v1.x work; tracked here so it's not forgotten.
+
 ### Added — encrypted credentials file
 
 Two-factor unlock pattern: "thing you have" (a `.crate-creds` file) + "thing you know" (your passphrase). Replaces the previous 5-input unlock with a file picker + passphrase.
