@@ -12,6 +12,8 @@ Two-factor unlock pattern: "thing you have" (a `.crate-creds` file) + "thing you
 
 - **Onboarding Done stage** gains a prominent "Download credentials file (recommended)" button with a hint card explaining what it does and why it's not auto-downloaded. File downloads as `<bucket-name>.crate-creds`.
 
+- **Folder UI gets a `🔐 Credentials` button** in the utility toolbar so the same download is available any time the folder is open — covers users who skipped the Done-stage download or who came in via the manual 5-input unlock. Session memory now carries `passphrase` + `bucket.{name, accountId}` so the file can be rebuilt without re-prompting; same threat-model tier as the in-memory master key.
+
 - **Unlock screen rewritten** with two modes:
   - **File mode (default)**: drag-drop / click-to-pick a `.crate-creds` file. Drop zone shows file-loaded state with the bucket-name hint pulled from the envelope. Passphrase input is disabled until a file is loaded; Enter key submits. Wrong passphrase shows a clear "Wrong passphrase, or the credentials file is corrupt" message. AES-GCM auth-tag failure is the discriminator.
   - **Manual mode**: original 5-input form preserved as fallback for users who don't have the file (lost it, on a new device, etc.).
