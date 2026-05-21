@@ -78,7 +78,17 @@ Full reference: [`docs/esm-api.md`](docs/esm-api.md).
 ./smoke.sh
 ```
 
-Structural checks. The real verification gate is walking the wizard against your own R2 bucket on desktop + phone.
+Structural checks (also runs on every push + PR via GitHub Actions). The real verification gate is walking the wizard against your own R2 bucket on desktop + phone.
+
+## Versioning
+
+Crate is **v1**. Other naklios apps bind against this contract, so it's frozen:
+
+- **The bucket wire format** (encryption envelope, `.crate/crate.json` schema, manifest JSONL shape) is frozen. Bytes written by v1 will be readable by every v1.x. A `v: 2` upgrade requires coordinated browser + daemon releases with a documented migration path.
+- **The ESM API** in [`lib/crate.js`](lib/crate.js) is frozen at the 9 methods documented in [`docs/esm-api.md`](docs/esm-api.md). Additions bump the minor version (non-breaking). Removing or changing a method signature bumps the major.
+- **The CRATE-PAIR pairing protocol** (token shape, redeem flow, error codes) is frozen against `nakli-hub` + `nakli-cf-worker` transports.
+
+See [`CHANGELOG.md`](CHANGELOG.md) for the version history.
 
 ## Licence
 
