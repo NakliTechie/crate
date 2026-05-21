@@ -135,10 +135,19 @@
   }
   .screen-body.tight { padding: 1.2rem; min-height: 0; }
 
+  /* The live wizard is column-constrained to ~480px in viewport. Match
+     that so the mocks read as proper screen-captures rather than
+     stretched-to-fit-the-doc-column placeholders. */
+  .mock-stage, .mock-welcome {
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
   /* Mock wizard progress strip */
   .mock-progress {
     font-size: 0.78rem; color: var(--muted-2);
     display: flex; gap: 0.6rem; margin-bottom: 1.2rem; flex-wrap: wrap;
+    max-width: 480px; margin-left: auto; margin-right: auto;
   }
   .mock-progress .step.current { color: var(--text); font-weight: 500; }
 
@@ -344,16 +353,18 @@
           <div class="screen-url">crate.naklios.dev</div>
         </div>
         <div class="screen-body">
-          <div class="mock-progress"><span class="step current">welcome</span> · <span class="step">unlock</span></div>
-          <h2 style="font-weight:500; font-size:1.6rem; margin:0 0 0.3rem;">Crate</h2>
-          <p style="color:var(--muted); margin:0 0 0.8rem; font-size:0.95rem;">A personal cloud folder. Files live in a bucket you own (Cloudflare R2 by default), encrypted before they leave your browser. No NakliTechie account, no subscription, no server on the path.</p>
-          <div style="border: 1px solid var(--warn); border-radius: 6px; padding: 0.6rem 0.8rem; margin: 0.5rem 0; font-size: 0.85rem;">
-            <strong style="color: var(--warn);">v1.0.</strong> End-to-end encrypted in this browser. The bucket owner (Cloudflare, Hetzner, B2, AWS) sees ciphertext + access patterns only.
-          </div>
-          <div style="display:flex; flex-direction:column; gap: 0.4rem; margin-top: 1rem; max-width: 420px;">
-            <button class="mock-btn block">How this works (read first — 60 seconds)</button>
-            <button class="mock-btn block primary">Set up a new folder</button>
-            <button class="mock-btn block">Unlock an existing folder</button>
+          <div class="mock-welcome">
+            <div class="mock-progress"><span class="step current">welcome</span> · <span class="step">unlock</span></div>
+            <h2 style="font-weight:500; font-size:1.6rem; margin:0 0 0.3rem;">Crate</h2>
+            <p style="color:var(--muted); margin:0 0 0.8rem; font-size:0.95rem;">A personal cloud folder. Files live in a bucket you own (Cloudflare R2 by default), encrypted before they leave your browser. No NakliTechie account, no subscription, no server on the path.</p>
+            <div style="border: 1px solid var(--warn); border-radius: 6px; padding: 0.6rem 0.8rem; margin: 0.5rem 0; font-size: 0.85rem;">
+              <strong style="color: var(--warn);">v1.0.</strong> End-to-end encrypted in this browser. The bucket owner (Cloudflare, Hetzner, B2, AWS) sees ciphertext + access patterns only.
+            </div>
+            <div style="display:flex; flex-direction:column; gap: 0.4rem; margin-top: 1rem;">
+              <button class="mock-btn block">How this works (read first — 60 seconds)</button>
+              <button class="mock-btn block primary">Set up a new folder</button>
+              <button class="mock-btn block">Unlock an existing folder</button>
+            </div>
           </div>
         </div>
       </div>
