@@ -246,4 +246,4 @@ if [[ ! -f docs/backup.md ]]; then
   echo "FAIL: docs/backup.md missing — disaster-recovery runbook not landed"; exit 1
 fi
 
-echo "OK: crate (M3 + M4 + M5 + M5.1 + M6 + M7 + M7.1 QR + M8 + M8.1 help modal + M8.2 export)"
+echo "OK: crate v1"

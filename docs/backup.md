@@ -49,7 +49,7 @@ Useful for: a one-shot "I want to know I can get my data out of here." Less usef
 If you wrote down the 24-word recovery phrase the wizard gave you on the Recovery step:
 1. Open Crate → "Unlock an existing folder".
 2. Enter the bucket creds.
-3. Click "Forgot passphrase? Use recovery phrase" (M9 feature; until then: keep the passphrase safe, the recovery phrase is your insurance).
+3. Use the recovery phrase to set a new passphrase. (The "Forgot passphrase? Use recovery phrase" flow is on the roadmap; until it ships, the phrase is documentation — keep the passphrase safe and the recovery phrase as your insurance for the future.)
 
 If you lost both the passphrase AND the recovery phrase: your files are gone. There is no reset, no support email, no recovery flow. The same property that keeps Cloudflare from reading your files keeps anyone — including us — from helping you recover them.
 

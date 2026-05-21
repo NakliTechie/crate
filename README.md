@@ -14,10 +14,11 @@ Same app on both.
 ## What it is
 
 - **Single static HTML file** + a few small ESM modules. No build step. Host it anywhere.
-- **End-to-end encryption** in the browser tab: AES-256-GCM payloads with per-file random data keys, wrapped by a PBKDF2-derived master key (600 000 iterations, 16-byte random salt). Signed JSONL manifest with an HMAC-SHA256 prev-sig chain (tamper-evident).
+- **End-to-end encryption** in the browser tab: AES-256-GCM payloads with per-file random data keys, wrapped by a PBKDF2-derived master key (600 000 iterations, 16-byte random salt). Signed JSONL manifest with an HMAC-SHA256 prev-sig chain (tamper-evident). Full details: [`docs/encryption-model.md`](docs/encryption-model.md).
 - **Bring your own bucket**. R2 by default; Hetzner / Backblaze B2 / AWS S3 work via the same sig-v4 client. We never see your bucket creds; you never need a NakliTechie account.
 - **Cross-device sync**. Open the same URL on your phone — same passphrase + bucket creds — same folder. Two tabs converge in ~200ms; cross-device in ~15s.
-- **Optional native daemon** ([`crate-agent`](https://github.com/NakliTechie/crate-agent)) mirrors the bucket to a local folder on macOS or Linux. Drop a file into `~/crate/` on your laptop, it surfaces in the browser tab.
+- **Optional native daemon** ([`crate-agent`](https://github.com/NakliTechie/crate-agent)) mirrors the bucket to a plaintext folder on macOS or Linux. Drop a file into `~/crate/` on your laptop, it surfaces in the browser tab.
+- **Tiered export.** "Export folder" button downloads everything as a zip — small folders in-memory, large folders stream to disk via File System Access. Disaster-recovery runbook: [`docs/backup.md`](docs/backup.md).
 - **AGPL-3.0-or-later**. The whole encryption layer is [`lib/crypto.js`](lib/crypto.js); every network call is in [`lib/bucket.js`](lib/bucket.js). Read them.
 
 ## Quick start
@@ -50,10 +51,15 @@ Other apps (in nakliOS or elsewhere) bind against the 9-method surface in [`lib/
 ```js
 import { Crate } from "https://crate.naklios.dev/lib/crate.js";
 
-const c = await Crate.unlock({ bucket, accessKey, secretKey, passphrase });
+const c = await Crate.open({
+  bucketConfig: { accountId: "…", name: "my-bucket", region: "auto" },
+  credentials:  { accessKey: "…", secretKey: "…" },
+  passphrase:   "…",
+});
 await c.write("/notes/today.md", new TextEncoder().encode("# today"));
 const buf = await c.read("/notes/today.md");
-for await (const entry of c.list("/")) console.log(entry.path);
+for (const entry of await c.list("/")) console.log(entry.path);
+c.close();
 ```
 
 Full reference: [`docs/esm-api.md`](docs/esm-api.md).

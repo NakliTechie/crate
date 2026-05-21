@@ -1,12 +1,8 @@
-# Crate ESM API — locked at M5
+# Crate ESM API
 
-The `Crate` class in `lib/crate.js` is the programmatic surface other
-NakliTechie tools (Folio, Slate, Bahi, Mahalla, VaultMind, Tijori, KanZen…)
-bind to. **This surface is frozen at M5; new methods require a major
-version bump.**
+The `Crate` class in [`lib/crate.js`](../lib/crate.js) is the programmatic surface other NakliTechie tools (Folio, Slate, Bahi, Mahalla, VaultMind, Tijori, KanZen…) bind to. The 9-method surface below is the v1 contract — adding methods is a minor version bump; removing or changing them is a major bump.
 
-The shape mirrors File System Access (FSA). Apps choose at runtime: local
-FSA (default) or this Crate adapter. Same code path; different backend.
+The shape mirrors File System Access (FSA). Apps choose at runtime: local FSA (default) or this Crate adapter. Same code path; different backend.
 
 ## Lifecycle
 
@@ -111,9 +107,7 @@ any `move`s, and a final `delete` if present.
 
 ### `crate.onChange(handler)` → `unsubscribe()`
 
-Subscribes to change notifications fired by **this instance's**
-mutations. Returns an `unsubscribe` function. Cross-tab and cross-device
-fires at M6 (Sync binding).
+Subscribes to change notifications. The handler fires for **this instance's** mutations, for other tabs in the same origin (via BroadcastChannel), and for changes the manifest poller picks up from other devices (~15s polling cadence). Returns an `unsubscribe` function.
 
 ### `crate.close()`
 
@@ -135,43 +129,32 @@ matches the daemon `crate-agent` byte-for-byte. The two surfaces share
 the same Crate folder transparently; a file written from the browser
 appears in the daemon's `~/crate/` within seconds (and vice-versa).
 
-## 10-line external-script gate
-
-The M5 gate is "a 10-line script in a separate `<script type=module>`
-can list, read, write, delete using the API." Concretely:
+## Embedding example
 
 ```html
 <!doctype html>
 <script type="module">
-  import { Crate } from "./lib/crate.js";
+  import { Crate } from "https://crate.naklios.dev/lib/crate.js";
+
   const crate = await Crate.open({
     bucketConfig: { accountId: "…", name: "…", region: "auto" },
     credentials:  { accessKey: "…", secretKey: "…" },
     passphrase:   "…",
   });
+
   await crate.write("/hello.txt", new TextEncoder().encode("hi"));
   const back = await crate.read("/hello.txt");
   console.log(new TextDecoder().decode(back));    // → "hi"
   await crate.remove("/hello.txt");
+
   crate.close();
 </script>
 ```
 
-Run from any same-origin page; needs the bucket's CORS to allow that
-origin.
+Run from any origin the bucket's CORS allows.
 
 ## Versioning
 
-The 9-method surface above is the v1.0 contract. Adding a method bumps
-the minor version (no breaking change). Removing or changing a method
-signature bumps the major version and breaks downstream consumers — do
-not do it lightly.
+The 9-method surface above is the v1 contract. Adding a method bumps the minor version (no breaking change). Removing or changing a method signature bumps the major version and breaks downstream consumers.
 
-The encryption format version is `v: 1` (carried in `.crate/crate.json`
-and every manifest event). A `v: 2` upgrade requires:
-- a migration path from v1 (read-old + write-new on next open)
-- a documented breaking-change RFC in `docs/specs/`
-
-Both surfaces (browser + daemon) MUST update together; the daemon
-tolerates higher `v` on read (for forward-compat) but only writes `v: 1`
-until its own upgrade ships.
+The encryption format version is `v: 1` (carried in `.crate/crate.json` and every manifest event). A `v: 2` upgrade requires a migration path from v1 (read-old + write-new on next open) and coordinated browser+daemon releases. The daemon tolerates higher `v` on read (forward-compat) but only writes the version it was built for.
