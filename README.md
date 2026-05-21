@@ -6,7 +6,7 @@ Dropbox-shaped utility, NakliTechie-shaped substrate.
 
 ## Status
 
-**M7 — v1.0 ready (pending DNS + Chirag's friend gate at M8).** Every wire-level milestone in the M0–M8 schedule is shipped:
+**v1.0 — live at [`crate.naklitechie.com`](https://crate.naklitechie.com).** Every milestone in the M0–M8 schedule is shipped:
 
 | | What lands here |
 |---|---|
@@ -27,7 +27,7 @@ Wire format matches the [crate-agent daemon](https://github.com/NakliTechie/crat
 
 | Surface | Repo | When |
 |---|---|---|
-| Browser (this) | `NakliTechie/crate` | v1.0 (deployed at `naklitechie.github.io/crate/`; canonical URL `crate.naklitechie.com` after M8 DNS) |
+| Browser (this) | `NakliTechie/crate` | v1.0 at [`crate.naklitechie.com`](https://crate.naklitechie.com) |
 | Native daemon | `NakliTechie/crate-agent` | v1.2+ (built — `crate-agent pair` + `crate-agent start` give bidirectional sync) |
 
 Both build on the same Sync + Vault + Identity + Grant + History primitives (`NakliTechie/private-mesh`).

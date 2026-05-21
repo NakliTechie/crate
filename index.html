@@ -440,6 +440,69 @@
         text-align: center;
       }
       .qr-placeholder { color: var(--muted); }
+      /* Help modal (M8.1) ------------------------------------------------ */
+      .help-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        display: grid;
+        place-items: center;
+        z-index: 1100;
+        padding: 1rem;
+        overflow-y: auto;
+      }
+      .help-card {
+        background: var(--surface);
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        max-width: 36rem;
+        width: 100%;
+        max-height: 92vh;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+      .help-card h2 {
+        font-size: 1.5rem;
+        font-weight: 500;
+        margin: 0;
+        letter-spacing: -0.01em;
+      }
+      .help-card h3 {
+        font-size: 1.05rem;
+        font-weight: 500;
+        margin: 0 0 0.4rem 0;
+      }
+      .help-card p { margin: 0; }
+      .help-card ul { margin: 0.4rem 0; padding-left: 1.2rem; }
+      .help-card ul li { margin-bottom: 0.25rem; }
+      .help-step {
+        display: grid;
+        grid-template-columns: 2rem 1fr;
+        gap: 0.75rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .help-step:last-of-type { border-bottom: 0; }
+      .help-step-num {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 999px;
+        background: var(--surface-2);
+        border: 1px solid var(--border-strong);
+        display: grid;
+        place-items: center;
+        font-weight: 600;
+        color: var(--accent);
+        font-size: 0.95rem;
+      }
+      .help-step-body {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+      }
     </style>
   </head>
   <body>

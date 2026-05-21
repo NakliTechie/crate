@@ -178,6 +178,14 @@ for sym in encode renderTo; do
   fi
 done
 
+# M7.1 — confirm lib/qr.js is the real encoder, not the M7 placeholder.
+if grep -q "M7.1 — pair via copy-paste for now" lib/qr.js; then
+  echo "FAIL: lib/qr.js still has the M7 placeholder reason; M7.1 didn't land"; exit 1
+fi
+if ! grep -q "Reed-Solomon" lib/qr.js; then
+  echo "FAIL: lib/qr.js doesn't look like a real QR encoder (no Reed-Solomon)"; exit 1
+fi
+
 if ! grep -q "handlePair" lib/folder.js; then
   echo "FAIL: lib/folder.js missing handlePair — M7 pairing UI not wired"; exit 1
 fi
@@ -188,4 +196,16 @@ if ! grep -q "renderPairModal" lib/folder.js; then
   echo "FAIL: lib/folder.js missing renderPairModal"; exit 1
 fi
 
-echo "OK: crate (M3 + M4 + M5 + M5.1 unlock + M6 sync + M7 device-pairing UI)"
+# --- M8.1: help modal (friend-gate self-serve instructions) ----------
+
+if ! grep -q "openHelpModal" lib/onboarding.js; then
+  echo "FAIL: lib/onboarding.js missing openHelpModal — M8.1 help modal not wired"; exit 1
+fi
+if ! grep -q "How this works" lib/onboarding.js; then
+  echo "FAIL: lib/onboarding.js missing Welcome 'How this works' button"; exit 1
+fi
+if ! grep -q "help-card" index.html; then
+  echo "FAIL: index.html missing .help-card styles"; exit 1
+fi
+
+echo "OK: crate (M3 + M4 + M5 + M5.1 + M6 + M7 + M7.1 QR + M8 + M8.1 help modal)"
