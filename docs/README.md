@@ -42,7 +42,6 @@ crate/
 │   ├── manifest.js         # signed JSONL manifest
 │   ├── bucket.js           # S3 sig-v4 client (every network call lives here)
 │   ├── sigv4.js            # hand-rolled AWS Signature V4
-│   ├── recovery.js         # BIP-39 24-word phrase
 │   ├── onboarding.js       # wizard
 │   ├── folder.js           # folder UI
 │   ├── export.js           # tiered backup export

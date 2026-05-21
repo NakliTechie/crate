@@ -99,13 +99,13 @@ Two surfaces (browser tab + daemon, or two browser tabs) can race on manifest wr
 
 The browser side is `_flushManifest()` in `lib/crate.js`; the daemon side is `putManifest()` in `internal/syncer/syncer.go`. Same algorithm, symmetric.
 
-## Recovery phrase
+## No recovery credential
 
-The 24-word BIP-39 English phrase the wizard generates at first-time setup is your **backup credential**. It's NOT a recovery flow for the master key — it IS an alternative way to derive the master key.
+v1 has only one credential: your passphrase. There is no recovery phrase, no email-reset, no support backdoor. If you lose the passphrase, the bucket's contents are unrecoverable random bytes — by design.
 
-The phrase encodes 256 bits of entropy + an 8-bit checksum (so it self-validates on entry). At first-time setup, the master key is derived from your passphrase. The phrase is presented + you write it down + memory clears.
+That's the privacy guarantee cutting both ways. The cryptographic property that prevents Cloudflare from reading your files also prevents Crate (or anyone) from helping you recover them. Use a password manager. Write the passphrase on paper. Pick something memorable.
 
-Future: when the "Forgot passphrase? Use recovery phrase" flow ships, the phrase will let you set a new passphrase derived from the phrase entropy. Until then, the phrase is documentation: keep it safe so a future Crate version can use it.
+A future "Forgot passphrase? Use recovery phrase" flow would require a second credential bound to the same encryption — that's a v2 design decision (the schema would need an additional key-wrap slot in `.crate/crate.json`). v1 doesn't ship it.
 
 ## What we explicitly don't protect against
 

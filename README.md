@@ -42,7 +42,7 @@ About 3 minutes start to finish. The Welcome page has a "How this works (read fi
 
 The manifest at `.crate/manifest.jsonl.enc` is the source of truth for the folder shape. Every mutation appends a signed event; every surface materialises the manifest into a tree.
 
-If you lose your passphrase, your files are gone. Forever. We can't help you. That's the privacy guarantee cutting both ways — write the passphrase down somewhere safe, and write the 24-word recovery phrase the wizard gives you down somewhere else.
+If you lose your passphrase, your files are gone. Forever. We can't help you. That's the privacy guarantee cutting both ways — write the passphrase down somewhere safe. v1 has no recovery credential; redundancy comes from running the daemon + backing up `~/crate/` with your existing tools (see [`docs/backup.md`](docs/backup.md)).
 
 ## ESM API
 

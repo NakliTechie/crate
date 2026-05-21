@@ -220,7 +220,7 @@
       .pill-checking { color: var(--warn); border-color: var(--warn); }
       .pill-ok { color: var(--ok); border-color: var(--ok); }
       .pill-fail { color: var(--error); border-color: var(--error); }
-      /* Code + recovery grid ------------------------------------- */
+      /* Code blocks --------------------------------------------------- */
       code {
         background: var(--surface);
         padding: 0.1em 0.35em;
@@ -244,31 +244,7 @@
         outline: 2px solid var(--link);
         outline-offset: 2px;
       }
-      .recovery-grid {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 0.5rem;
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        padding: 0.9rem;
-      }
-      @media (min-width: 640px) {
-        .recovery-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
-      }
-      .recovery-word {
-        display: flex;
-        align-items: baseline;
-        gap: 0.35rem;
-        font-family: var(--mono);
-        font-size: 14px;
-      }
-      .recovery-index { color: var(--muted-2); font-size: 11px; min-width: 1.6em; text-align: right; }
-      .recovery-text { color: var(--text); }
-      /* Meter ---------------------------------------------------- */
+      /* Meter --------------------------------------------------------- */
       .meter {
         height: 6px;
         background: var(--surface);

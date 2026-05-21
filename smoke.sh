@@ -19,7 +19,6 @@
 # M3 gates (added when M3 lands):
 # - lib/crypto.js exports deriveMasterKey + encrypt + decrypt + hmacSign
 # - lib/manifest.js exports Manifest class + MANIFEST_PATH
-# - lib/recovery.js exports generateMnemonic + mnemonicToEntropy
 # - lib/cratejson.js exports build + parse + CRATE_PATH
 # - lib/bucket.js exports signedPut + signedGet + signedDelete
 #
@@ -99,12 +98,6 @@ fi
 for sym in createEvent updateEvent deleteEvent moveEvent mkdirEvent; do
   if ! grep -qE "^export function ${sym}\b" lib/manifest.js; then
     echo "FAIL: lib/manifest.js missing $sym export"; exit 1
-  fi
-done
-
-for sym in generateMnemonic mnemonicToEntropy entropyToMnemonic normalizeMnemonic; do
-  if ! grep -qE "^export (async )?function ${sym}\b" lib/recovery.js; then
-    echo "FAIL: lib/recovery.js missing $sym export"; exit 1
   fi
 done
 
