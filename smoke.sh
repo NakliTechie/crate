@@ -155,4 +155,19 @@ if ! grep -q "ESM API" docs/esm-api.md; then
   echo "FAIL: docs/esm-api.md not updated for M5"; exit 1
 fi
 
-echo "OK: crate (M3 encryption + manifest + M4 folder UI + M5 ESM API lock — 9-method surface)"
+# --- M6 checks --------------------------------------------------------
+
+if ! grep -qE "^export class SyncClient\b" lib/sync-client.js; then
+  echo "FAIL: lib/sync-client.js missing SyncClient class export"; exit 1
+fi
+if ! grep -q "BroadcastChannel" lib/sync-client.js; then
+  echo "FAIL: lib/sync-client.js missing BroadcastChannel wiring"; exit 1
+fi
+
+# --- M5.1: Unlock-existing-folder route --------------------------------
+
+if ! grep -q "renderUnlock" lib/onboarding.js; then
+  echo "FAIL: lib/onboarding.js missing renderUnlock — Unlock route not wired"; exit 1
+fi
+
+echo "OK: crate (M3 + M4 + M5 + M5.1 unlock + M6 sync)"
