@@ -7,6 +7,7 @@ Each vendored library in `lib/vendor/` lists its source URL, version, and licenc
 | [`zxcvbn-ts/core.umd.min.js`](zxcvbn-ts/core.umd.min.js) | 3.0.4 | [npm @zxcvbn-ts/core](https://www.npmjs.com/package/@zxcvbn-ts/core) | MIT (see [`zxcvbn-ts/LICENSE.txt`](zxcvbn-ts/LICENSE.txt)) | Realistic password-strength estimator. Powers `lib/entropy.js`. Exposes `window.zxcvbnts.core`. |
 | [`zxcvbn-ts/language-common.umd.min.js`](zxcvbn-ts/language-common.umd.min.js) | 3.0.4 | [npm @zxcvbn-ts/language-common](https://www.npmjs.com/package/@zxcvbn-ts/language-common) | MIT | Cross-language data (passwords list, keyboard layouts, diceware). |
 | [`zxcvbn-ts/language-en.umd.min.js`](zxcvbn-ts/language-en.umd.min.js) | 3.0.2 | [npm @zxcvbn-ts/language-en](https://www.npmjs.com/package/@zxcvbn-ts/language-en) | MIT | English-specific dictionaries: common words, first/last names, Wikipedia. |
+| [`client-zip/index.js`](client-zip/index.js) | 2.4.6 | [npm client-zip](https://www.npmjs.com/package/client-zip) | MIT (see [`client-zip/LICENSE`](client-zip/LICENSE)) | Tiny streaming-zip generator (~6 KB). Powers the folder UI's "Export folder" feature via `lib/export.js`. ReadableStream-based, so the FSA tier streams to disk at O(1) memory. |
 | BIP-39 English wordlist (in `lib/wordlist.js`) | n/a | [bitcoin/bips bip-0039/english.txt](https://github.com/bitcoin/bips/blob/master/bip-0039/english.txt) | Public domain (BIP author dedication) | 2048 words. Used for recovery-phrase generation/confirmation and the 7-word generated passphrase. |
 
 ## Notes

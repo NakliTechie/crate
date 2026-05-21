@@ -207,5 +207,43 @@ fi
 if ! grep -q "help-card" index.html; then
   echo "FAIL: index.html missing .help-card styles"; exit 1
 fi
+if ! grep -q "Plan for backups" lib/onboarding.js; then
+  echo "FAIL: help modal missing 'Plan for backups' step 8"; exit 1
+fi
 
-echo "OK: crate (M3 + M4 + M5 + M5.1 + M6 + M7 + M7.1 QR + M8 + M8.1 help modal)"
+# --- Export feature (tiered backup download) -------------------------
+
+for sym in planExport runExport formatBytes; do
+  if ! grep -qE "^export (async )?function ${sym}\b" lib/export.js; then
+    echo "FAIL: lib/export.js missing $sym export"; exit 1
+  fi
+done
+if ! grep -q "client-zip" lib/export.js; then
+  echo "FAIL: lib/export.js doesn't import client-zip"; exit 1
+fi
+if ! grep -q "showSaveFilePicker" lib/export.js; then
+  echo "FAIL: lib/export.js missing FSA streaming path (showSaveFilePicker)"; exit 1
+fi
+if [[ ! -f lib/vendor/client-zip/index.js ]]; then
+  echo "FAIL: lib/vendor/client-zip/index.js missing"; exit 1
+fi
+if [[ ! -f lib/vendor/client-zip/LICENSE ]]; then
+  echo "FAIL: lib/vendor/client-zip/LICENSE missing"; exit 1
+fi
+if ! grep -q "client-zip" lib/vendor/LICENSES.md; then
+  echo "FAIL: lib/vendor/LICENSES.md doesn't list client-zip"; exit 1
+fi
+if ! grep -q "handleExport" lib/folder.js; then
+  echo "FAIL: lib/folder.js missing handleExport"; exit 1
+fi
+if ! grep -q "Export folder" lib/folder.js; then
+  echo "FAIL: lib/folder.js missing 'Export folder' button"; exit 1
+fi
+if ! grep -q "renderExportModal" lib/folder.js; then
+  echo "FAIL: lib/folder.js missing renderExportModal"; exit 1
+fi
+if [[ ! -f docs/backup.md ]]; then
+  echo "FAIL: docs/backup.md missing — disaster-recovery runbook not landed"; exit 1
+fi
+
+echo "OK: crate (M3 + M4 + M5 + M5.1 + M6 + M7 + M7.1 QR + M8 + M8.1 help modal + M8.2 export)"
