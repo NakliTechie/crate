@@ -1,6 +1,10 @@
 # Crate (browser) — security review (Codex, 2026-05)
 
-**Status as of 2026-05-21**: H1, H3, H4, M1 patched in [`3699c86`](https://github.com/NakliTechie/crate/commit/3699c86). H2 (manifest rollback / truncation detection) deferred to v1.x — requires persistent tail anchor across browser+daemon; design discussion needed. L1 (`.crate-creds` plaintext hint) is intentional and documented in `lib/credsfile.js`.
+**Status as of 2026-05-21**:
+- v1.0.0 quick fixes: H1, H3, H4, M1 patched in [`3699c86`](https://github.com/NakliTechie/crate/commit/3699c86).
+- v1.0.1 (architectural patch): H2 (manifest rollback / truncation) landed via new `lib/anchor.js` (IndexedDB primary, sessionStorage fallback); `Crate.open`, `Crate.bootstrap`, `_flushManifest`, and `SyncClient._pollManifest` all validate against the persisted `{count, lastSig}` anchor.
+- L1 (`.crate-creds` plaintext bucket-name hint) is intentional and documented in `lib/credsfile.js`.
+- **No outstanding audit items.**
 
 The body below is the raw audit output, unedited.
 

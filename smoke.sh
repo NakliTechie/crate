@@ -251,4 +251,28 @@ if [[ ! -f docs/backup.md ]]; then
   echo "FAIL: docs/backup.md missing — disaster-recovery runbook not landed"; exit 1
 fi
 
+# --- v1.0.1 security-patch checks -------------------------------------
+# Manifest rollback anchor (audit finding H2). lib/anchor.js holds the
+# IndexedDB + sessionStorage-backed {count, lastSig} tail tracker; the
+# Crate.open / bootstrap / SyncClient._pollManifest / _flushManifest
+# code paths must all call into it.
+
+if [[ ! -f lib/anchor.js ]]; then
+  echo "FAIL: lib/anchor.js missing — H2 rollback patch not landed"; exit 1
+fi
+for sym in loadAnchor saveAnchor validate ManifestRollbackError; do
+  if ! grep -qE "^export (async )?(function|class|const) ${sym}\b" lib/anchor.js; then
+    echo "FAIL: lib/anchor.js missing $sym export"; exit 1
+  fi
+done
+if ! grep -q 'from "./anchor.js"' lib/crate.js; then
+  echo "FAIL: lib/crate.js does not import lib/anchor.js (H2 patch)"; exit 1
+fi
+if ! grep -q 'from "./anchor.js"' lib/sync-client.js; then
+  echo "FAIL: lib/sync-client.js does not import lib/anchor.js (H2 patch)"; exit 1
+fi
+if ! grep -q '"anchors"' lib/idb.js; then
+  echo "FAIL: lib/idb.js does not list the 'anchors' store"; exit 1
+fi
+
 echo "OK: crate v1"

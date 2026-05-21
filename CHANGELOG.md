@@ -4,7 +4,15 @@ All notable changes to Crate. Format loosely follows [Keep a Changelog](https://
 
 ## [Unreleased]
 
-### Security — patches from the 2026-05 audit
+## [1.0.1] — 2026-05-21
+
+### Security — second round (manifest rollback)
+
+The architecturally-deferred finding from the 2026-05 audit has now landed. It required new code (anchor storage + per-call-site wiring), not a one-line patch; broken out from the v1.0.0 quick fixes so the changelog reflects the work.
+
+- **H2 — manifest rollback / truncation detection** ([`<pending>`](https://github.com/NakliTechie/crate/commit/HEAD)). A bucket-only attacker can serve an older valid encrypted manifest — AES-GCM + the prev_sig chain both pass on the prefix, so the browser previously accepted it silently. Fix: per-bucket `{count, lastSig}` rollback anchor in **new `lib/anchor.js`**, persisted to IndexedDB (primary) with sessionStorage fallback for private-browsing / storage-blocked contexts. `Crate.open`, `Crate.bootstrap`, `Crate._flushManifest` (412-replay path), and `SyncClient._pollManifest` all validate against the anchor before accepting a manifest — **truncation** (loaded.count < anchor.count) and **fork** (chain diverges at the anchor point) both throw `ManifestRollbackError` and abort the load/poll. First-load is TOFU + `console.log`; subsequent loads enforce monotonic growth. New `Manifest.tail()` returns the `{count, lastSig}` pair for the writer-path anchor advance.
+
+### Security — patches from the 2026-05 audit (from v1.0.0; recap)
 
 OpenAI Codex (gpt-5.5) reviewed the crypto + sync paths under a defined threat model and turned up four High + one Medium + one Low finding. All quick fixes landed:
 
@@ -15,9 +23,9 @@ OpenAI Codex (gpt-5.5) reviewed the crypto + sync paths under a defined threat m
 
 Full report: [`docs/security-review-2026-05-codex.md`](docs/security-review-2026-05-codex.md).
 
-### Deferred — manifest rollback / truncation (H2)
+### Previously deferred — now landed in v1.0.1
 
-A bucket-only attacker can serve an older valid `.crate/manifest.jsonl.enc` and have it accepted as current state. AES-GCM and the prev_sig chain both still pass — the manifest's older prefix really was valid once. Real fix requires a persistent "last-seen tail" anchor that survives across browser + daemon and across devices for the same Crate. Sketched design: each client stores `{count, lastSig}` in sessionStorage (or daemon state.db) and rejects loaded manifests that don't extend the anchor; multi-device coordination uses the Hub bucket-proxy's `?since=` cursor (not yet implemented). v1.x work; tracked here so it's not forgotten.
+H2 (manifest rollback / truncation) was deferred from v1.0.0 with the rationale that it needed real new code (persistent anchor storage). It landed in v1.0.1 above. No outstanding audit items.
 
 ### Added — encrypted credentials file
 
