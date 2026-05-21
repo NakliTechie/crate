@@ -6,7 +6,9 @@ Dropbox-shaped utility, NakliTechie-shaped substrate.
 
 ## Status
 
-**M0** — skeleton. The build target is a single HTML file + ESM modules at `crate.naklitechie.com`. See `docs/README.md` for what each milestone delivers. The browser implementation contract lives at [`docs/specs/crate-browser-handoff-v1.0.md`](docs/specs/crate-browser-handoff-v1.0.md). The product roadmap and the cross-surface pairing protocol live in the sibling `private-mesh` repo: [`crate-vision-and-roadmap-v1.0.md`](../private-mesh/docs/specs/crate-vision-and-roadmap-v1.0.md) and [`crate-pairing-protocol-v1.0.md`](../private-mesh/docs/specs/crate-pairing-protocol-v1.0.md).
+**M5** — M3 (encryption + signed manifest) + M4 (folder UI) + M5 (ESM API lock) all land in this commit. AES-256-GCM payload encryption with per-file random data keys wrapped by a PBKDF2-derived master key (600 000 iterations, 16-byte salt stored in `.crate/crate.json`). Signed JSONL manifest at `.crate/manifest.jsonl.enc` with HMAC-SHA256 prev-sig chain (tamper-evident). Real BIP-39 24-word recovery phrase with checksum (importable into other tools). Folder UI mounts after the wizard's Done stage: tree view, drag-drop + file-picker upload, download, rename, delete, mkdir. The [`Crate`](lib/crate.js) ESM class exposes the locked 9-method surface (`list / read / write / remove / move / mkdir / stat / history / onChange`) documented in [`docs/esm-api.md`](docs/esm-api.md). Wire format matches the daemon (`crate-agent`) byte-for-byte — the two surfaces share a Crate folder transparently.
+
+Remaining: M6 (multi-tab/device sync), M7 (device pairing UI — QR + intent POST), M8 (ship polish + DNS).
 
 ## Two surfaces
 
