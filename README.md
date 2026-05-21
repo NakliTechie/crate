@@ -6,7 +6,7 @@ Dropbox-shaped utility, NakliTechie-shaped substrate.
 
 ## Status
 
-**v1.0 — live at [`crate.naklitechie.com`](https://crate.naklitechie.com).** Every milestone in the M0–M8 schedule is shipped:
+**v1.0 — live at [`crate.naklitechie.com`](https://crate.naklitechie.com) and [`crate.naklios.dev`](https://crate.naklios.dev).** Same app on both — `crate.naklios.dev` is the canonical home alongside the rest of [nakliOS](https://naklios.dev); `crate.naklitechie.com` is the personal-project surface. Every milestone in the M0–M8 schedule is shipped:
 
 | | What lands here |
 |---|---|
@@ -27,7 +27,7 @@ Wire format matches the [crate-agent daemon](https://github.com/NakliTechie/crat
 
 | Surface | Repo | When |
 |---|---|---|
-| Browser (this) | `NakliTechie/crate` | v1.0 at [`crate.naklitechie.com`](https://crate.naklitechie.com) |
+| Browser (this) | `NakliTechie/crate` | v1.0 at [`crate.naklios.dev`](https://crate.naklios.dev) (canonical) + [`crate.naklitechie.com`](https://crate.naklitechie.com) |
 | Native daemon | `NakliTechie/crate-agent` | v1.2+ (built — `crate-agent pair` + `crate-agent start` give bidirectional sync) |
 
 Both build on the same Sync + Vault + Identity + Grant + History primitives (`NakliTechie/private-mesh`).
@@ -52,7 +52,7 @@ Both build on the same Sync + Vault + Identity + Grant + History primitives (`Na
 1. Create an R2 bucket in your Cloudflare account.
 2. Create a scoped API token with read+write on that bucket.
 3. Paste the CORS JSON from the wizard into the bucket's CORS settings.
-4. Open `naklitechie.github.io/crate/` → "Set up a new folder" → walk the wizard.
+4. Open [`crate.naklios.dev`](https://crate.naklios.dev) → "Set up a new folder" → walk the wizard.
 5. Drop a file in. Refresh the tab. File's still there. Open the tab on your phone (same passphrase + creds via "Unlock an existing folder"). File's there too.
 
 ## Licence
