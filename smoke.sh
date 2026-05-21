@@ -106,6 +106,18 @@ for sym in build parse shortBrowserFingerprint; do
     echo "FAIL: lib/cratejson.js missing $sym export"; exit 1
   fi
 done
+
+for sym in pack unpack peekHint suggestedFilename; do
+  if ! grep -qE "^export (async )?function ${sym}\b" lib/credsfile.js; then
+    echo "FAIL: lib/credsfile.js missing $sym export"; exit 1
+  fi
+done
+if ! grep -q "import \* as credsfile" lib/onboarding.js; then
+  echo "FAIL: lib/onboarding.js doesn't import credsfile"; exit 1
+fi
+if ! grep -q "SESSION_CREDS_KEY" lib/onboarding.js; then
+  echo "FAIL: lib/onboarding.js missing sessionStorage refresh-resume wiring"; exit 1
+fi
 if ! grep -qE "^export const CRATE_PATH\b" lib/cratejson.js; then
   echo "FAIL: lib/cratejson.js missing CRATE_PATH export"; exit 1
 fi

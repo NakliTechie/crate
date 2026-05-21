@@ -2,6 +2,38 @@
 
 All notable changes to Crate. Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning follows [SemVer](https://semver.org/spec/v2.0.0.html); see the Versioning section in the README for what counts as breaking.
 
+## [Unreleased]
+
+### Added — encrypted credentials file
+
+Two-factor unlock pattern: "thing you have" (a `.crate-creds` file) + "thing you know" (your passphrase). Replaces the previous 5-input unlock with a file picker + passphrase.
+
+- **New module `lib/credsfile.js`** — `pack(creds, passphrase)` produces a JSON envelope `{v, type, hint, kdf, salt, iv, ct}`. Same primitives as the master key (PBKDF2-SHA256/600k iter + AES-256-GCM); independent salt per file. `unpack(bytes, passphrase)` validates + decrypts + returns the bucket + credentials. `peekHint(bytes)` reads only the plaintext hint field (the bucket name) without the passphrase — used by the Unlock UI to label "Welcome back to `<name>`" before the user types anything. `suggestedFilename(bucketName)` returns `"<bucket-name>.crate-creds"`.
+
+- **Onboarding Done stage** gains a prominent "Download credentials file (recommended)" button with a hint card explaining what it does and why it's not auto-downloaded. File downloads as `<bucket-name>.crate-creds`.
+
+- **Unlock screen rewritten** with two modes:
+  - **File mode (default)**: drag-drop / click-to-pick a `.crate-creds` file. Drop zone shows file-loaded state with the bucket-name hint pulled from the envelope. Passphrase input is disabled until a file is loaded; Enter key submits. Wrong passphrase shows a clear "Wrong passphrase, or the credentials file is corrupt" message. AES-GCM auth-tag failure is the discriminator.
+  - **Manual mode**: original 5-input form preserved as fallback for users who don't have the file (lost it, on a new device, etc.).
+  - Toggle between modes via inline links; no separate route or state.
+
+- **Refresh-resilient session** — after a successful first-time setup OR a successful unlock, the encrypted creds blob is stashed in `sessionStorage` (NOT localStorage; tab-scoped). On page reload, the wizard detects the blob, routes straight to the Unlock screen with the file pre-loaded from session memory, and shows "Welcome back to `<bucket-name>`. Enter your passphrase to reopen it." The passphrase + master key still don't persist; the blob is useless without the passphrase. Cleared on explicit Start-over / reset.
+
+### Threat-model notes
+
+The credentials file doesn't weaken anything. Attacker with file only is back to PBKDF2/600k + AES-256-GCM brute force — same security floor as the bucket's master key derivation. Attacker with passphrase only has nothing more than they had before. The file makes carrying the four bucket strings a single artifact you can put in 1Password / USB drive / wherever you keep secrets. Threat-model details in `docs/encryption-model.md`.
+
+### Notes for naklios integration
+
+The same encrypted blob format that downloads as the file can be reused by the nakliOS Settings panel:
+- "Set up a new folder" → opens crate.naklios.dev wizard
+- "I have a Crate already" → file picker + passphrase + optional "Remember this folder on this device" checkbox
+- Remember-on = store the encrypted blob in nakliOS-managed IndexedDB
+- Boot flow becomes one-passphrase unlock; nakliOS broadcasts a `crate-session-ready` event after decrypting
+- Apps that bind against the Crate ESM API attach to the shared session
+
+Naklios implementation lives in the `nakli-dev` repo when ready; this build exposes the building blocks.
+
 ## [1.0.0] — 2026-05-21
 
 First stable release. Frozen surfaces:

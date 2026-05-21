@@ -107,6 +107,60 @@ That's the privacy guarantee cutting both ways. The cryptographic property that 
 
 A future "Forgot passphrase? Use recovery phrase" flow would require a second credential bound to the same encryption — that's a v2 design decision (the schema would need an additional key-wrap slot in `.crate/crate.json`). v1 doesn't ship it.
 
+## Credentials file (`.crate-creds`)
+
+To open a Crate you need five things: bucket name, account ID, access key, secret key, passphrase. The first four are bucket-identifying / accessing strings; the fifth is your secret. Typing all five every time is hostile.
+
+The credentials file bundles the first four into a single artifact encrypted under the fifth. The user downloads it at first-time setup; on every subsequent unlock they pick the file + type the passphrase. Two clicks instead of five.
+
+The file is a CLIENT artifact — **never stored on the bucket**. Wire shape:
+
+```json
+{
+  "v":     1,
+  "type":  "crate-creds",
+  "hint":  "<bucket-name>",
+  "kdf":   { "algo": "PBKDF2-SHA256", "iter": 600000 },
+  "salt":  "<base64 16 bytes — independent of bucket salt>",
+  "iv":    "<base64 12 bytes>",
+  "ct":    "<base64 AES-256-GCM(canonical-JSON inner)>"
+}
+```
+
+Inner plaintext (the thing the file hides):
+
+```json
+{
+  "v":          1,
+  "provider":   "r2",
+  "bucket":     { "name": "...", "accountId": "...", "region": "auto" },
+  "credentials":{ "accessKey": "...", "secretKey": "..." }
+}
+```
+
+The `hint` field is plaintext so the unlock UI can show "Welcome back to `<bucket-name>`" before the user types anything. It's not security-critical: anyone who can read the file already knows the bucket exists, and the bucket's identifying strings are inside the AEAD seal anyway.
+
+### Threat model
+
+The file doesn't weaken anything compared to typing the five strings directly:
+
+| Attacker has | Result |
+|---|---|
+| File only | PBKDF2/600k + AES-256-GCM brute force barrier. 70-bit passphrase = practically infeasible. |
+| Passphrase only | They'd need to re-derive the bucket creds from somewhere else (Cloudflare dashboard, e.g.). The file doesn't add risk; they already have the creds in their head. |
+| Both | Reads the folder. By design — this is what "two factor for credentials" means. |
+| File posted publicly | Pre-encrypted; same passphrase floor. The file IS designed to be passable (email, store in 1Password, etc.). |
+
+Independent salt per file (not the bucket's salt) so two Crates encrypted under the same passphrase have unrelated ciphertext.
+
+### Refresh-resilient session
+
+The same encrypted blob is also written to `sessionStorage` after first-time setup or a successful unlock. On page refresh, the wizard detects the blob and routes the user to a streamlined "Welcome back to `<name>`. Enter passphrase to reopen." prompt. The blob is tab-scoped (dies on tab close, not on refresh) and useless without the passphrase. Cleared on Start-over.
+
+### Implementation
+
+Single module: [`lib/credsfile.js`](../lib/credsfile.js). Pure WebCrypto, no third-party code, no new vendor. The same `lib/crypto.js` primitives the master-key derivation uses.
+
 ## What we explicitly don't protect against
 
 Threat model is precise. Some things are out of scope:

@@ -133,6 +133,34 @@
         color: var(--muted);
       }
       .field-help { margin: 0; font-size: 0.85rem; }
+      .btn-link {
+        background: transparent;
+        border: 0;
+        color: var(--link);
+        cursor: pointer;
+        padding: 0;
+        font-size: inherit;
+        font-family: inherit;
+        text-decoration: underline;
+      }
+      .btn-link:hover { opacity: 0.8; }
+      .creds-dropzone {
+        border: 2px dashed var(--border-strong);
+        border-radius: var(--radius);
+        padding: 1.5rem 1rem;
+        text-align: center;
+        background: var(--surface);
+        margin-bottom: 0.75rem;
+        cursor: pointer;
+        transition: border-color 0.15s, background 0.15s;
+        outline: none;
+      }
+      .creds-dropzone:hover, .creds-dropzone:focus-visible { border-color: var(--link); background: var(--surface-2); }
+      .creds-dropzone-active { border-color: var(--link); background: var(--surface-2); }
+      .creds-dropzone-loaded { border-style: solid; border-color: var(--ok); }
+      .creds-dropzone-msg { margin: 0; color: var(--muted); font-size: 0.95rem; }
+      .creds-dropzone-loaded .creds-dropzone-msg { color: var(--text); }
+      .creds-dropzone-icon { font-size: 1.4rem; margin-right: 0.3rem; }
       .stage-list { color: var(--muted); padding-left: 1.25rem; margin: 0.5rem 0 0.75rem; }
       .stage-list li { margin-bottom: 0.4rem; line-height: 1.5; }
       .stage-list li strong { color: var(--text); font-weight: 500; }
