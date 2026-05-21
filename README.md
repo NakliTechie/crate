@@ -4,40 +4,67 @@ A personal cloud folder. Files live in a bucket you own (Cloudflare R2 by defaul
 
 Dropbox-shaped utility, NakliTechie-shaped substrate.
 
-## Status
+## Live
 
-**v1.0 — live at [`crate.naklitechie.com`](https://crate.naklitechie.com) and [`crate.naklios.dev`](https://crate.naklios.dev).** Same app on both — `crate.naklios.dev` is the canonical home alongside the rest of [nakliOS](https://naklios.dev); `crate.naklitechie.com` is the personal-project surface. Every milestone in the M0–M8 schedule is shipped:
+- **[`crate.naklios.dev`](https://crate.naklios.dev)** — canonical home, alongside the rest of [nakliOS](https://naklios.dev).
+- **[`crate.naklitechie.com`](https://crate.naklitechie.com)** — personal-project surface.
 
-| | What lands here |
-|---|---|
-| **M0** | Skeleton (single HTML + ESM modules; AGPL-3.0). |
-| **M1** | Onboarding wizard — Welcome → Bucket → Credentials → CORS → Passphrase → Recovery → Done, plus the pair-device flow. |
-| **M2** | Real Cloudflare R2 via AWS sig-v4 (`lib/sigv4.js`). Hetzner / B2 / AWS-S3 abstraction shipped at the same time; R2 verified end-to-end against a real bucket. |
-| **M3** | AES-256-GCM payload encryption with per-file random data keys wrapped by a PBKDF2-derived master key (600 000 iterations; 16-byte salt in `.crate/crate.json`). Signed JSONL manifest at `.crate/manifest.jsonl.enc` with HMAC-SHA256 prev-sig chain (tamper-evident). Real BIP-39 24-word recovery phrase with checksum. |
-| **M4** | Folder UI — tree view, drag-drop + file-picker upload, download, rename, delete, mkdir; mobile-responsive. |
-| **M5** | ESM API lock — [`lib/crate.js`](lib/crate.js) exposes the 9-method surface (`list / read / write / remove / move / mkdir / stat / history / onChange`) documented in [`docs/esm-api.md`](docs/esm-api.md). Other NakliTechie tools bind against this. |
-| **M5.1** | Unlock-existing-folder route at the Welcome stage — survives page refresh after onboarding. |
-| **M6** | Sync binding — BroadcastChannel cross-tab + periodic manifest poll cross-device. Files added/edited/deleted in another tab or another paired device surface within ~15s (or ~200ms across same-origin tabs). |
-| **M7** | Device pairing UI — mints a `CRATE-PAIR-…` token via `POST /v1/pairing/intent` against your transport, shows it with a copy button + expiry countdown + cancel. QR matrix display lands at M7.1. |
-| **M8** | DNS cutover to `crate.naklitechie.com` (user-side task) + help modal + Chirag's friend-onboarding gate. This commit lands the polish; the DNS is the user's call. |
+Same app on both.
 
-Wire format matches the [crate-agent daemon](https://github.com/NakliTechie/crate-agent) byte-for-byte — the two surfaces share a Crate folder transparently. Drop a file into `~/crate/` on your laptop, it surfaces in the browser tab; upload from the browser, it appears in `~/crate/`.
+## What it is
 
-## Two surfaces
+- **Single static HTML file** + a few small ESM modules. No build step. Host it anywhere.
+- **End-to-end encryption** in the browser tab: AES-256-GCM payloads with per-file random data keys, wrapped by a PBKDF2-derived master key (600 000 iterations, 16-byte random salt). Signed JSONL manifest with an HMAC-SHA256 prev-sig chain (tamper-evident).
+- **Bring your own bucket**. R2 by default; Hetzner / Backblaze B2 / AWS S3 work via the same sig-v4 client. We never see your bucket creds; you never need a NakliTechie account.
+- **Cross-device sync**. Open the same URL on your phone — same passphrase + bucket creds — same folder. Two tabs converge in ~200ms; cross-device in ~15s.
+- **Optional native daemon** ([`crate-agent`](https://github.com/NakliTechie/crate-agent)) mirrors the bucket to a local folder on macOS or Linux. Drop a file into `~/crate/` on your laptop, it surfaces in the browser tab.
+- **AGPL-3.0-or-later**. The whole encryption layer is [`lib/crypto.js`](lib/crypto.js); every network call is in [`lib/bucket.js`](lib/bucket.js). Read them.
 
-| Surface | Repo | When |
-|---|---|---|
-| Browser (this) | `NakliTechie/crate` | v1.0 at [`crate.naklios.dev`](https://crate.naklios.dev) (canonical) + [`crate.naklitechie.com`](https://crate.naklitechie.com) |
-| Native daemon | `NakliTechie/crate-agent` | v1.2+ (built — `crate-agent pair` + `crate-agent start` give bidirectional sync) |
+## Quick start
 
-Both build on the same Sync + Vault + Identity + Grant + History primitives (`NakliTechie/private-mesh`).
+1. Create an R2 bucket in your Cloudflare account (free tier: 10 GB storage + 1 M writes + 10 M reads / month).
+2. Create a scoped API token with read+write on that bucket.
+3. Paste the CORS JSON the wizard gives you into the bucket's CORS settings.
+4. Open [`crate.naklios.dev`](https://crate.naklios.dev) → "Set up a new folder" → walk the wizard.
+5. Drop a file in. Refresh the tab. File's still there. Open the tab on your phone (same passphrase + creds via "Unlock an existing folder"). File's there too.
+
+About 3 minutes start to finish. The Welcome page has a "How this works (read first)" button with step-by-step screenshots-quality instructions.
 
 ## Architecture
 
-- **Browser**: end-to-end encryption in this tab. Bucket owner (Cloudflare, Hetzner, B2, AWS) sees ciphertext + access patterns only.
-- **Daemon**: same encryption envelope; talks to the bucket through the Hub bucket-proxy (Hub holds R2 creds; daemon holds a sync-scope capability).
-- **Hub** (`nakli-hub`): R2 proxy + macaroon-issuance. Sees ciphertext only.
-- **Sync**: manifest at `.crate/manifest.jsonl.enc` is the source of truth. Every surface materialises it into a tree; mutations append signed events.
+| Surface | Sees |
+|---|---|
+| Browser tab (this) | Plaintext (in your tab's memory only) ↔ ciphertext over the wire |
+| Bucket owner (Cloudflare et al.) | Ciphertext + access patterns; never the plaintext or your passphrase |
+| `crate-agent` daemon | Plaintext on your local disk; ciphertext over the wire to the bucket |
+| `nakli-hub` (optional bucket-proxy) | Ciphertext only; never the plaintext |
+
+The manifest at `.crate/manifest.jsonl.enc` is the source of truth for the folder shape. Every mutation appends a signed event; every surface materialises the manifest into a tree.
+
+If you lose your passphrase, your files are gone. Forever. We can't help you. That's the privacy guarantee cutting both ways — write the passphrase down somewhere safe, and write the 24-word recovery phrase the wizard gives you down somewhere else.
+
+## ESM API
+
+Other apps (in nakliOS or elsewhere) bind against the 9-method surface in [`lib/crate.js`](lib/crate.js):
+
+```js
+import { Crate } from "https://crate.naklios.dev/lib/crate.js";
+
+const c = await Crate.unlock({ bucket, accessKey, secretKey, passphrase });
+await c.write("/notes/today.md", new TextEncoder().encode("# today"));
+const buf = await c.read("/notes/today.md");
+for await (const entry of c.list("/")) console.log(entry.path);
+```
+
+Full reference: [`docs/esm-api.md`](docs/esm-api.md).
+
+## Repos
+
+| | |
+|---|---|
+| Browser (this) | [`NakliTechie/crate`](https://github.com/NakliTechie/crate) |
+| Native daemon | [`NakliTechie/crate-agent`](https://github.com/NakliTechie/crate-agent) |
+| Transports + Hub | [`NakliTechie/private-mesh`](https://github.com/NakliTechie/private-mesh) |
 
 ## Smoke
 
@@ -45,15 +72,7 @@ Both build on the same Sync + Vault + Identity + Grant + History primitives (`Na
 ./smoke.sh
 ```
 
-22 structural checks across M0–M7. Static analysis only — the real R2 manual gate (walk the wizard, upload a file, refresh, see file in tree) is the human verification gate the spec documents at each milestone.
-
-## Quick start (against your own R2 bucket)
-
-1. Create an R2 bucket in your Cloudflare account.
-2. Create a scoped API token with read+write on that bucket.
-3. Paste the CORS JSON from the wizard into the bucket's CORS settings.
-4. Open [`crate.naklios.dev`](https://crate.naklios.dev) → "Set up a new folder" → walk the wizard.
-5. Drop a file in. Refresh the tab. File's still there. Open the tab on your phone (same passphrase + creds via "Unlock an existing folder"). File's there too.
+Structural checks. The real verification gate is walking the wizard against your own R2 bucket on desktop + phone.
 
 ## Licence
 
