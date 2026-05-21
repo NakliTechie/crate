@@ -2,6 +2,23 @@
 
 All notable changes to Crate. Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning follows [SemVer](https://semver.org/spec/v2.0.0.html); see the Versioning section in the README for what counts as breaking.
 
+## [Unreleased]
+
+### Added
+
+- File preview modal: per-file "👁" button opens an inline preview of text and image files (other types fall back to Download). Files larger than 50 MB show a "too large to preview" message instead of trying to load.
+- Bucket-credentials rotation flow documented in `docs/backup.md`. No code change needed — refresh tab + Unlock with new creds.
+
+### Deferred to future versions (rationale)
+
+These were considered for v1 and explicitly punted:
+
+- **Camera-based QR scanning.** The QR display ships; capture doesn't. The pairing token is for the daemon (CLI, no camera) or for OS-level QR-OCR (iOS Camera, Android Lens — both already parse text from QR). No browser-side consumer in v1 means no point building a scanner. Reconsider when a real consumer appears.
+- **Streaming decrypt for large files.** WebCrypto's AES-256-GCM requires the full ciphertext before yielding plaintext (auth tag is at the end). Streaming requires chunked encryption — a v2 wire format with per-segment AEAD tags. Coordinated browser + daemon release.
+- **Trash / undelete UI.** `crate.remove()` currently issues a real DELETE. Soft-delete needs either a GC pass somewhere (daemon? scheduled?) or accepting that "deleted" objects keep counting against your R2 quota. Real design decision; out of v1.
+- **Public / shared file URLs.** v1's model is "passphrase = full access." Sharing a single file requires per-file share keys orthogonal to the master key — a new crypto design, not just a UI feature. v2 problem.
+- **Non-R2 provider end-to-end verification on real buckets.** Hetzner, Backblaze B2, AWS S3 work algorithmically (same sig-v4 client). Verification on each real provider account is a manual gate — the user side.
+
 ## [1.0.0] — 2026-05-21
 
 First stable release. Frozen surfaces:

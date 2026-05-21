@@ -65,6 +65,19 @@ Pick whichever's faster:
 - **`rclone sync` between buckets** — ciphertext-preserving. After sync completes, run the wizard against the new bucket with the same passphrase + the new creds. Same files, new home, zero plaintext exposure.
 - **Plaintext re-upload via the daemon** — if you'd rather start fresh on the new provider (e.g., different folder layout): run the daemon against the old bucket, copy `~/crate/` to a local archive, set up a new Crate against the new bucket, drop the archive in.
 
+### "I want to rotate my bucket credentials"
+
+You rotated your R2 token in the Cloudflare dashboard (or revoked the old one). To pick up the new credentials in Crate:
+
+1. Refresh the browser tab (or open a new one).
+2. Choose **Unlock an existing folder** on Welcome.
+3. Enter the same bucket name + Account ID + passphrase, with the **new** Access Key + Secret.
+4. The folder unlocks against the new credentials.
+
+You don't need to migrate any data. The bucket creds aren't stored anywhere — they live in browser memory for the active session only. Crate validates them against R2 on each operation; the new ones take over the moment you re-unlock.
+
+If you're running `crate-agent` too: re-pair the daemon with the new transport credentials, or restart it pointing at the new R2 token directly (see `crate-agent --help`).
+
 ## Threat model reminder
 
 Backups inherit Crate's threat model. The daemon's local folder is plaintext — anyone with read access to your home directory can read your Crate files there. The bucket-to-bucket mirror is ciphertext, but the mirror's owner sees access patterns. The exported zip is plaintext — handle it like any other sensitive file.
