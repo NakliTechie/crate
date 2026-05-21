@@ -170,4 +170,22 @@ if ! grep -q "renderUnlock" lib/onboarding.js; then
   echo "FAIL: lib/onboarding.js missing renderUnlock — Unlock route not wired"; exit 1
 fi
 
-echo "OK: crate (M3 + M4 + M5 + M5.1 unlock + M6 sync)"
+# --- M7 checks --------------------------------------------------------
+
+for sym in encode renderTo; do
+  if ! grep -qE "^export (async )?function ${sym}\b" lib/qr.js; then
+    echo "FAIL: lib/qr.js missing $sym export"; exit 1
+  fi
+done
+
+if ! grep -q "handlePair" lib/folder.js; then
+  echo "FAIL: lib/folder.js missing handlePair — M7 pairing UI not wired"; exit 1
+fi
+if ! grep -q "Pair an agent" lib/folder.js; then
+  echo "FAIL: lib/folder.js missing 'Pair an agent' button"; exit 1
+fi
+if ! grep -q "renderPairModal" lib/folder.js; then
+  echo "FAIL: lib/folder.js missing renderPairModal"; exit 1
+fi
+
+echo "OK: crate (M3 + M4 + M5 + M5.1 unlock + M6 sync + M7 device-pairing UI)"
