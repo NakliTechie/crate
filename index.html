@@ -332,6 +332,37 @@
       }
       .folder-crumb { text-decoration: none; }
       .folder-crumb:hover { text-decoration: underline; }
+      .folder-search {
+        margin: 0.5rem 0 0.5rem;
+      }
+      .folder-search input { width: 100%; max-width: 360px; }
+      .history-list {
+        list-style: none;
+        padding: 0;
+        margin: 0.5rem 0;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--surface);
+        max-height: 360px;
+        overflow-y: auto;
+      }
+      .history-row {
+        display: grid;
+        grid-template-columns: 6em auto 1fr;
+        gap: 0.6rem;
+        align-items: baseline;
+        padding: 0.4rem 0.7rem;
+        border-bottom: 1px solid var(--border);
+      }
+      .history-row:last-child { border-bottom: none; }
+      .history-op {
+        font-family: var(--mono);
+        font-size: 12px;
+        text-transform: uppercase;
+        color: var(--text);
+      }
+      .history-ts { font-size: 11px; }
+      .history-detail { font-size: 12px; }
       .folder-tree {
         list-style: none;
         padding: 0;
