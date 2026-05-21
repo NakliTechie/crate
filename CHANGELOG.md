@@ -2,23 +2,6 @@
 
 All notable changes to Crate. Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning follows [SemVer](https://semver.org/spec/v2.0.0.html); see the Versioning section in the README for what counts as breaking.
 
-## [Unreleased]
-
-### Added
-
-- File preview modal: per-file "👁" button opens an inline preview of text and image files (other types fall back to Download). Files larger than 50 MB show a "too large to preview" message instead of trying to load.
-- Bucket-credentials rotation flow documented in `docs/backup.md`. No code change needed — refresh tab + Unlock with new creds.
-
-### Deferred to future versions (rationale)
-
-These were considered for v1 and explicitly punted:
-
-- **Camera-based QR scanning.** The QR display ships; capture doesn't. The pairing token is for the daemon (CLI, no camera) or for OS-level QR-OCR (iOS Camera, Android Lens — both already parse text from QR). No browser-side consumer in v1 means no point building a scanner. Reconsider when a real consumer appears.
-- **Streaming decrypt for large files.** WebCrypto's AES-256-GCM requires the full ciphertext before yielding plaintext (auth tag is at the end). Streaming requires chunked encryption — a v2 wire format with per-segment AEAD tags. Coordinated browser + daemon release.
-- **Trash / undelete UI.** `crate.remove()` currently issues a real DELETE. Soft-delete needs either a GC pass somewhere (daemon? scheduled?) or accepting that "deleted" objects keep counting against your R2 quota. Real design decision; out of v1.
-- **Public / shared file URLs.** v1's model is "passphrase = full access." Sharing a single file requires per-file share keys orthogonal to the master key — a new crypto design, not just a UI feature. v2 problem.
-- **Non-R2 provider end-to-end verification on real buckets.** Hetzner, Backblaze B2, AWS S3 work algorithmically (same sig-v4 client). Verification on each real provider account is a manual gate — the user side.
-
 ## [1.0.0] — 2026-05-21
 
 First stable release. Frozen surfaces:
@@ -31,20 +14,32 @@ First stable release. Frozen surfaces:
 
 - Onboarding wizard: bucket → credentials → CORS → passphrase → done. Cloudflare deep-links + step-by-step help modal for first-time R2 users.
 - Folder UI: tree view, drag-drop + file-picker upload, download, rename, delete, mkdir, move. Mobile-responsive.
+- Per-file preview modal: text + image files render inline (≤50 MB); other types fall back to Download.
+- Per-file history modal: timestamped event log per path, read from the manifest already in memory.
+- Folder header: file count + total size summary, recomputed on every render.
+- Search input: filters the current tree view by basename substring (case-insensitive).
+- Tiered folder export: in-memory zip for ≤500 MB, File System Access streaming for larger folders on Chrome/Edge/Brave/Opera, daemon-install fallback for unsupported browsers.
+- Streaming-write download for large files: on browsers with `showSaveFilePicker` (Chrome/Edge/Brave/Opera), files ≥50 MB skip the in-memory Blob copy and write decrypted plaintext directly to a user-picked destination via `FileSystemWritableFileStream`. Memory peak drops from ~3× to ~2× file size on supported browsers; falls back transparently to the Blob path on others.
 - Cross-tab sync via BroadcastChannel (~200 ms convergence on same origin).
 - Cross-device sync via periodic manifest poll (~15 s).
 - ETag-conditional PUT (`If-Match`) for concurrent-write safety. On 412 the writer re-fetches, splices its pending events on top, and retries up to 3×.
 - Device-pairing UI: real QR matrix encoder for the `CRATE-PAIR-…` token.
-- Tiered folder export: in-memory zip for ≤500 MB, File System Access streaming for larger folders on Chrome/Edge/Brave/Opera, daemon-install fallback for unsupported browsers.
-- Per-file history modal showing every manifest event affecting a file.
-- Search filter in the folder view (basename substring, case-insensitive).
-- Header summary: file count + total size + encryption note.
 - Hetzner / Backblaze B2 / AWS S3 endpoint support via the same sig-v4 client (algorithmically correct; R2 verified live).
 - Cross-surface byte-identical interop with the [`crate-agent`](https://github.com/NakliTechie/crate-agent) Go daemon.
-- Docs: encryption-model, ESM API reference, backup runbook.
+- Docs: encryption-model, ESM API reference, backup runbook (incl. bucket-credentials rotation).
 - GitHub Actions: smoke checks run on every push to main + on every PR.
 
 ### Notes
 
 - v1 has **one credential**: the passphrase. There is no recovery phrase, email-reset, or support backdoor. Redundancy comes from running the daemon + backing up the local mirror, mirroring the bucket with `rclone`, or R2 object versioning (see [`docs/backup.md`](docs/backup.md)).
 - The pairing flow currently sends `identity_pubkey: "browser-stub"` in the intent payload. Authentication is enforced by the `X-Fabric-Grant` macaroon. Real per-browser Ed25519 identity binding lands with the nakliOS Identity integration.
+
+### Considered for v1, explicitly out of scope
+
+- **True streaming decrypt** (chunk-level, peak memory = chunk size). WebCrypto's AES-256-GCM requires the full ciphertext before yielding plaintext (auth tag at the end). True streaming needs chunked AEAD — a v2 wire format with per-segment tags and matching browser + daemon changes. v1 ships the FSA streaming-write path (above) which solves the desktop large-file case without breaking the wire format. Mobile large-file downloads remain memory-capped.
+- **Camera-based QR scanning** for pairing tokens. QR display ships; the daemon is CLI with no camera, and OS-level QR-OCR (iOS Camera, Android Lens) already handles the human-OCR-the-screen case. No browser-side consumer means no scanner.
+- **Trash / undelete UI.** `crate.remove()` issues a real DELETE; soft-delete needs a GC pass design that we don't have. Out of v1.
+- **Public / shared file URLs.** v1's model is "passphrase = full access"; sharing requires per-file share keys orthogonal to the master key — new crypto design, v2.
+- **Non-R2 provider end-to-end verification on real buckets.** Algorithmically supported; manual gate per provider account.
+
+These are documented here so future contributors know the difference between "forgotten" and "explicitly deferred with a reason."
