@@ -4,6 +4,32 @@ All notable changes to Crate. Format loosely follows [Keep a Changelog](https://
 
 ## [Unreleased]
 
+## [1.0.2] — 2026-05-22
+
+### Security — extend H2 anchor coverage to the folder write path
+
+The H2 manifest-rollback anchor checks added in v1.0.1 covered `Crate._flushManifest`, `Crate.open`, and `SyncClient._pollManifest`, but not the FolderUI's separate `flushManifest` copy — the wizard's folder UI writes through its own near-duplicate implementation, and that copy did not advance the anchor on success or validate the re-fetched manifest against the anchor on a 412 retry.
+
+- **`FolderUI.flushManifest` now advances the rollback anchor on successful PUT** ([`4df3632`](https://github.com/NakliTechie/crate/commit/4df3632)). Calls `anchor.saveAnchor(bucketBase, manifest.tail())` after the PUT acks; best-effort try/catch matches `Crate._flushManifest`. Closes the cross-tab gap where a user writing via the folder UI in tab A would leave the saved anchor pinned at whatever count tab A read on open.
+- **412-replay path now validates the re-fetched manifest** ([`4df3632`](https://github.com/NakliTechie/crate/commit/4df3632)). `anchor.loadAnchor` + `anchor.validate` on `fresh.events` before trusting the re-fetched manifest. A bucket-only attacker who races a PUT to induce the 412 could otherwise serve an older valid manifest in the re-GET — AES-GCM and the prev_sig chain both pass on a valid prefix, so this is the layer that catches the swap. Matches `Crate._flushManifest` and `SyncClient._pollManifest`.
+
+### Refactored — single source of truth for flushManifest
+
+Discovered during the H2-coverage patch: `Crate._flushManifest` and `FolderUI.flushManifest` had drifted for over a release cycle precisely because they were near-duplicates. The duplication has now been eliminated.
+
+- **New `lib/manifest-flush.js` module** ([`8dbb6f0`](https://github.com/NakliTechie/crate/commit/8dbb6f0)) exports a single `flushManifest(state, opts)` function carrying the full flush + 412-replay + anchor logic. Both surfaces delegate:
+  - `Crate._flushManifest` builds a small getter/setter adapter mapping its `_`-prefixed instance properties onto the unprefixed shape the shared function expects. Writes to `manifestETag` / `lastFlushedEventCount` propagate back to `this._manifestETag` / `this._lastFlushedEventCount`.
+  - `FolderUI.flushManifest` passes `this.session` through directly — the session object already matches the unprefixed shape.
+  - `errorFactory` injection lets each caller keep its own thrown type (`CrateError` for the ESM API; plain `Error` for the FolderUI banner).
+- Net change: +180 / −155 across `crate.js` + `folder.js` + the new module. No behavioural change. `node --check` + `./smoke.sh` clean.
+
+The class of drift that produced the H2-coverage gap can no longer recur — the anchor logic lives in one place.
+
+### Notes
+
+- Wire format is unchanged. v1.0.2 reads and writes byte-identical bucket state as v1.0.1; no migration required. v1.0.2 ↔ v1.0.x interop is fully preserved.
+- `naklOS`'s vendored copy under `vendor/crate/v1.0.1/` is being refreshed to v1.0.2 in a parallel commit. The v1.0.1 vendor copy already had the Crate-side H2 checks; only the FolderUI path was affected, and naklOS uses the Crate ESM API directly (no FolderUI). The refresh is for the dedupe + smaller surface.
+
 ## [1.0.1] — 2026-05-21
 
 ### Security — second round (manifest rollback)
