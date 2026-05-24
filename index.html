@@ -175,6 +175,25 @@
       .hint-card .hint-card-title { font-weight: 500; color: var(--text); margin-bottom: 0.35rem; }
       .hint-card ul { color: var(--muted); padding-left: 1.1rem; margin: 0; }
       .hint-card li { margin-bottom: 0.2rem; }
+      /* Done-stage save-acknowledgement gate. Bordered to read as a
+         deliberate confirmation rather than a footnote. */
+      .save-ack {
+        display: flex;
+        gap: 0.6rem;
+        align-items: flex-start;
+        padding: 0.65rem 0.8rem;
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius);
+        background: var(--surface);
+        font-size: 0.88rem;
+        line-height: 1.45;
+        cursor: pointer;
+      }
+      .save-ack input[type="checkbox"] {
+        margin-top: 0.2rem;
+        flex-shrink: 0;
+        width: 1.1em; height: 1.1em;
+      }
       .field-row {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
