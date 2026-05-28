@@ -726,6 +726,81 @@
         flex-direction: column;
         gap: 0.4rem;
       }
+      /* Landing (welcome) screen ----------------------------------
+         The welcome stage drops the wizard chrome (progress + nav)
+         and renders as a deliberate landing rather than step 1. */
+      .landing {
+        display: flex;
+        flex-direction: column;
+        gap: 1.75rem;
+        padding: 2.5rem 0 1.5rem;
+      }
+      .landing-hero {
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+      }
+      .landing-wordmark {
+        font-size: 3rem;
+        font-weight: 600;
+        letter-spacing: -0.03em;
+        line-height: 1.04;
+        margin: 0;
+        outline: none;
+      }
+      .landing-tagline {
+        font-size: 1.15rem;
+        line-height: 1.5;
+        color: var(--text);
+        margin: 0;
+        max-width: 34rem;
+      }
+      /* Privacy promise — reused on the landing AND inside the help
+         modal, so the message is identical in both places. */
+      .promise-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.9rem;
+      }
+      .promise-item {
+        display: grid;
+        grid-template-columns: 1.75rem 1fr;
+        gap: 0.75rem;
+        align-items: start;
+      }
+      .promise-icon {
+        font-size: 1.25rem;
+        line-height: 1.4;
+        text-align: center;
+      }
+      .promise-text { min-width: 0; }
+      .promise-text strong {
+        display: block;
+        color: var(--text);
+        font-weight: 600;
+        font-size: 0.98rem;
+      }
+      .promise-text span {
+        display: block;
+        color: var(--muted);
+        font-size: 0.9rem;
+        line-height: 1.45;
+      }
+      .landing-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+      }
+      .btn-lg {
+        min-height: 52px;
+        font-size: 1.05rem;
+      }
+      .landing-help { text-align: center; margin: 0; }
+      .landing-meta { color: var(--muted); font-size: 0.9rem; margin: 0; }
+      .landing-footer { margin-top: 0.25rem; }
     </style>
   </head>
   <body>

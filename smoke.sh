@@ -208,19 +208,42 @@ if ! grep -q "renderPairModal" lib/folder.js; then
   echo "FAIL: lib/folder.js missing renderPairModal"; exit 1
 fi
 
-# --- M8.1: help modal (friend-gate self-serve instructions) ----------
+# --- Landing + help modal (concise explainer + setup walk-through) ---
 
-if ! grep -q "openHelpModal" lib/onboarding.js; then
-  echo "FAIL: lib/onboarding.js missing openHelpModal — M8.1 help modal not wired"; exit 1
+# Landing redesign: welcome stage renders as a landing (not wizard step 1)
+# with the shared three-point privacy promise.
+if ! grep -q 'class: "landing"' lib/onboarding.js; then
+  echo "FAIL: lib/onboarding.js missing landing section on welcome stage"; exit 1
 fi
-if ! grep -q "How this works" lib/onboarding.js; then
-  echo "FAIL: lib/onboarding.js missing Welcome 'How this works' button"; exit 1
+if ! grep -q "function promiseList" lib/onboarding.js; then
+  echo "FAIL: lib/onboarding.js missing promiseList (landing/help privacy promise)"; exit 1
+fi
+if ! grep -q "\.landing" index.html; then
+  echo "FAIL: index.html missing .landing styles"; exit 1
+fi
+# Concise "What is Crate?" explainer — the modal that auto-opens once.
+if ! grep -q "openHelpModal" lib/onboarding.js; then
+  echo "FAIL: lib/onboarding.js missing openHelpModal — concise help modal not wired"; exit 1
+fi
+if ! grep -q "What is Crate?" lib/onboarding.js; then
+  echo "FAIL: lib/onboarding.js missing 'What is Crate?' help-modal title"; exit 1
+fi
+# Detailed Cloudflare walk-through reachable behind "Full setup guide".
+if ! grep -q "openSetupGuide" lib/onboarding.js; then
+  echo "FAIL: lib/onboarding.js missing openSetupGuide — detailed setup walk-through not wired"; exit 1
 fi
 if ! grep -q "help-card" index.html; then
   echo "FAIL: index.html missing .help-card styles"; exit 1
 fi
 if ! grep -q "Plan for backups" lib/onboarding.js; then
-  echo "FAIL: help modal missing 'Plan for backups' step 8"; exit 1
+  echo "FAIL: setup guide missing 'Plan for backups' step 8"; exit 1
+fi
+# First-visit auto-open of the explainer (one time, localStorage-gated).
+if ! grep -q "HELP_SEEN_KEY" lib/onboarding.js; then
+  echo "FAIL: lib/onboarding.js missing HELP_SEEN_KEY — first-visit auto-open not wired"; exit 1
+fi
+if ! grep -q "maybeAutoOpenHelp" lib/onboarding.js; then
+  echo "FAIL: lib/onboarding.js missing maybeAutoOpenHelp — first-visit auto-open not wired"; exit 1
 fi
 
 # --- Export feature (tiered backup download) -------------------------
