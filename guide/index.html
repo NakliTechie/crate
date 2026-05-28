@@ -155,6 +155,29 @@
   .mock-stage h2 { font-size: 1.3rem; margin: 0 0 0.4rem; font-weight: 500; }
   .mock-stage .muted { color: var(--muted); font-size: 0.92rem; margin-bottom: 1rem; }
 
+  /* Mock welcome landing — wordmark, tagline, privacy promise, CTAs.
+     Mirrors the live .landing / .promise-list layout at mock scale. */
+  .mock-wordmark {
+    font-size: 2.5rem; font-weight: 600; letter-spacing: -0.03em;
+    line-height: 1.05; margin: 0 0 0.6rem; color: var(--text);
+  }
+  .mock-tagline { color: var(--text); font-size: 1rem; line-height: 1.5; margin: 0 0 1.3rem; }
+  .mock-promise {
+    list-style: none; padding: 0; margin: 0 0 1.3rem;
+    display: flex; flex-direction: column; gap: 0.8rem;
+  }
+  .mock-promise li {
+    display: grid; grid-template-columns: 1.6rem 1fr; gap: 0.7rem;
+    align-items: start; margin: 0;
+  }
+  .mock-promise .icon { font-size: 1.2rem; line-height: 1.4; text-align: center; }
+  .mock-promise .txt strong { display: block; color: var(--text); font-weight: 600; font-size: 0.92rem; }
+  .mock-promise .txt span { display: block; color: var(--muted); font-size: 0.85rem; line-height: 1.45; }
+  .mock-landing-actions { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
+  .mock-landing-help { text-align: center; margin: 0 0 0.8rem; }
+  .mock-link { color: var(--link); text-decoration: underline; font-size: 0.9rem; }
+  .mock-landing-meta { color: var(--muted); font-size: 0.85rem; margin: 0; }
+
   /* Mock fields */
   .mock-field { margin-bottom: 0.9rem; }
   .mock-label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 0.25rem; }
@@ -344,31 +367,45 @@
     <section id="setup">
       <h2><span class="num">3</span>Setting up your folder</h2>
       <p>
-        Open <a href="https://crate.naklios.dev">crate.naklios.dev</a> in any modern browser. You'll see the Welcome screen:
+        Open <a href="https://crate.naklios.dev">crate.naklios.dev</a> in any modern browser. You'll land on Crate's start screen:
       </p>
 
-      <div class="screen" aria-label="Welcome screen mockup">
+      <div class="screen" aria-label="Crate landing screen mockup">
         <div class="screen-chrome">
           <div class="screen-dots"><span></span><span></span><span></span></div>
           <div class="screen-url">crate.naklios.dev</div>
         </div>
         <div class="screen-body">
           <div class="mock-welcome">
-            <div class="mock-progress"><span class="step current">welcome</span> · <span class="step">unlock</span></div>
-            <h2 style="font-weight:500; font-size:1.6rem; margin:0 0 0.3rem;">Crate</h2>
-            <p style="color:var(--muted); margin:0 0 0.8rem; font-size:0.95rem;">A personal cloud folder. Files live in a bucket you own (Cloudflare R2 by default), encrypted before they leave your browser. No NakliTechie account, no subscription, no server on the path.</p>
-            <div style="border: 1px solid var(--warn); border-radius: 6px; padding: 0.6rem 0.8rem; margin: 0.5rem 0; font-size: 0.85rem;">
-              <strong style="color: var(--warn);">v1.0.</strong> End-to-end encrypted in this browser. The bucket owner (Cloudflare, Hetzner, B2, AWS) sees ciphertext + access patterns only.
-            </div>
-            <div style="display:flex; flex-direction:column; gap: 0.4rem; margin-top: 1rem;">
-              <button class="mock-btn block">How this works (read first — 60 seconds)</button>
+            <div class="mock-wordmark">Crate</div>
+            <p class="mock-tagline">Your own cloud folder. Files live in storage you control, encrypted on your device before they upload — so the only person who can read them is you.</p>
+            <ul class="mock-promise">
+              <li>
+                <span class="icon">🔒</span>
+                <span class="txt"><strong>End-to-end encrypted</strong><span>AES-256 in this tab. Your passphrase never leaves your device, so nobody else can read your files — not us, not your storage provider.</span></span>
+              </li>
+              <li>
+                <span class="icon">🪣</span>
+                <span class="txt"><strong>Your storage, your keys</strong><span>Bring your own bucket — Cloudflare R2, Hetzner, Backblaze, or AWS. We never hold your data and there's nothing to subscribe to.</span></span>
+              </li>
+              <li>
+                <span class="icon">🚫</span>
+                <span class="txt"><strong>No account, no middleman</strong><span>No NakliTechie sign-up, no server on the path, no telemetry. Just your browser talking to your bucket.</span></span>
+              </li>
+            </ul>
+            <div class="mock-landing-actions">
               <button class="mock-btn block primary">Set up a new folder</button>
               <button class="mock-btn block">Unlock an existing folder</button>
             </div>
+            <p class="mock-landing-help"><span class="mock-link">New here? See how Crate works</span></p>
+            <p class="mock-landing-meta">You'll need a free Cloudflare account, about 3 minutes, and a passphrase you'll remember.</p>
           </div>
         </div>
       </div>
 
+      <p>
+        On your very first visit, a short <strong>What is Crate?</strong> explainer opens over this screen automatically — the same privacy promise plus how Crate works in three steps, with a <strong>Full setup guide</strong> button that expands the detailed Cloudflare walk-through. It auto-opens only once; afterwards you can reopen it any time from the <strong>New here? See how Crate works</strong> link.
+      </p>
       <p>
         For a first-time setup, click <strong>Set up a new folder</strong>. (If you've onboarded already and you're back, see <a href="#unlock">section 5</a>.) The wizard has five stages: Bucket → Credentials → CORS → Passphrase → Done.
       </p>
