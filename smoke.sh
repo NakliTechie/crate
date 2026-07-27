@@ -305,4 +305,6 @@ if ! grep -q '"anchors"' lib/idb.js; then
   echo "FAIL: lib/idb.js does not list the 'anchors' store"; exit 1
 fi
 
+node --no-warnings test/manifest-verification.test.mjs
+
 echo "OK: crate v1"
