@@ -258,6 +258,15 @@
         border-color: var(--border-strong);
       }
       .btn-secondary:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-2); }
+      .btn-danger-primary {
+        background: var(--error);
+        color: var(--bg);
+        border-color: var(--error);
+      }
+      .btn-danger-primary:hover:not(:disabled) {
+        background: #fca5a5;
+        border-color: #fca5a5;
+      }
       .btn-block { width: 100%; }
       .deep-link {
         color: var(--link);
@@ -639,6 +648,25 @@
         font-size: 1.4rem;
         font-weight: 500;
         margin: 0;
+      }
+      .delete-card { max-width: 28rem; }
+      .delete-dialog-path {
+        padding: 0.65rem 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--surface-2);
+        color: var(--text);
+        overflow-wrap: anywhere;
+      }
+      .dialog-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.5rem;
+        margin-top: 0.25rem;
+      }
+      @media (max-width: 420px) {
+        .dialog-actions { flex-direction: column-reverse; }
+        .dialog-actions .btn { width: 100%; }
       }
       .preview-card { max-width: 48rem; }
       .preview-image {

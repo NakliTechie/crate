@@ -28,7 +28,7 @@ The class of drift that produced the H2-coverage gap can no longer recur — the
 ### Notes
 
 - Wire format is unchanged. v1.0.2 reads and writes byte-identical bucket state as v1.0.1; no migration required. v1.0.2 ↔ v1.0.x interop is fully preserved.
-- `naklOS`'s vendored copy under `vendor/crate/v1.0.1/` is being refreshed to v1.0.2 in a parallel commit. The v1.0.1 vendor copy already had the Crate-side H2 checks; only the FolderUI path was affected, and naklOS uses the Crate ESM API directly (no FolderUI). The refresh is for the dedupe + smaller surface.
+- `NakliOS`'s vendored copy under `vendor/crate/v1.0.1/` is being refreshed to v1.0.2 in a parallel commit. The v1.0.1 vendor copy already had the Crate-side H2 checks; only the FolderUI path was affected, and NakliOS uses the Crate ESM API directly (no FolderUI). The refresh is for the dedupe + smaller surface.
 
 ## [1.0.1] — 2026-05-21
 
@@ -76,14 +76,14 @@ The credentials file doesn't weaken anything. Attacker with file only is back to
 
 ### Notes for naklios integration
 
-The same encrypted blob format that downloads as the file can be reused by the nakliOS Settings panel:
+The same encrypted blob format that downloads as the file can be reused by the NakliOS Settings panel:
 - "Set up a new folder" → opens crate.naklios.dev wizard
 - "I have a Crate already" → file picker + passphrase + optional "Remember this folder on this device" checkbox
-- Remember-on = store the encrypted blob in nakliOS-managed IndexedDB
-- Boot flow becomes one-passphrase unlock; nakliOS broadcasts a `crate-session-ready` event after decrypting
+- Remember-on = store the encrypted blob in NakliOS-managed IndexedDB
+- Boot flow becomes one-passphrase unlock; NakliOS broadcasts a `crate-session-ready` event after decrypting
 - Apps that bind against the Crate ESM API attach to the shared session
 
-Naklios implementation lives in the `nakli-dev` repo when ready; this build exposes the building blocks.
+NakliOS implementation lives in the `nakli-dev` repo when ready; this build exposes the building blocks.
 
 ## [1.0.0] — 2026-05-21
 
@@ -115,7 +115,7 @@ First stable release. Frozen surfaces:
 ### Notes
 
 - v1 has **one credential**: the passphrase. There is no recovery phrase, email-reset, or support backdoor. Redundancy comes from running the daemon + backing up the local mirror, mirroring the bucket with `rclone`, or R2 object versioning (see [`docs/backup.md`](docs/backup.md)).
-- The pairing flow currently sends `identity_pubkey: "browser-stub"` in the intent payload. Authentication is enforced by the `X-Fabric-Grant` macaroon. Real per-browser Ed25519 identity binding lands with the nakliOS Identity integration.
+- The pairing flow currently sends `identity_pubkey: "browser-stub"` in the intent payload. Authentication is enforced by the `X-Fabric-Grant` macaroon. Real per-browser Ed25519 identity binding lands with the NakliOS Identity integration.
 
 ### Considered for v1, explicitly out of scope
 

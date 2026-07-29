@@ -143,6 +143,15 @@ fi
 if ! grep -q 'id="folder-root"' index.html; then
   echo "FAIL: index.html missing #folder-root mount point"; exit 1
 fi
+if grep -qE '(^|[^[:alnum:]_])(window\.)?confirm\(' lib/folder.js; then
+  echo "FAIL: lib/folder.js uses a native confirm() popup"; exit 1
+fi
+if ! grep -q "renderDeleteConfirmModal" lib/folder.js; then
+  echo "FAIL: lib/folder.js missing the in-app delete confirmation modal"; exit 1
+fi
+if ! grep -q "\.delete-card" index.html; then
+  echo "FAIL: index.html missing delete-modal styles"; exit 1
+fi
 
 # --- M5 checks --------------------------------------------------------
 

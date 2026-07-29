@@ -6,7 +6,7 @@ Dropbox-shaped utility, NakliTechie-shaped substrate.
 
 ## Live
 
-- **[`crate.naklios.dev`](https://crate.naklios.dev)** — canonical home, alongside the rest of [nakliOS](https://naklios.dev).
+- **[`crate.naklios.dev`](https://crate.naklios.dev)** — canonical home, alongside the rest of [NakliOS](https://naklios.dev).
 - **[`crate.naklitechie.com`](https://crate.naklitechie.com)** — personal-project surface.
 
 Same app on both.
