@@ -18,6 +18,7 @@
 #
 # M3 gates (added when M3 lands):
 # - lib/crypto.js exports deriveMasterKey + encrypt + decrypt + hmacSign
+#   + sealObject / openObject (chunked v2 object framing)
 # - lib/manifest.js exports Manifest class + MANIFEST_PATH
 # - lib/recovery.js exports generateMnemonic + mnemonicToEntropy (restored T1)
 # - lib/cratejson.js exports build + parse + CRATE_PATH
@@ -84,7 +85,7 @@ done
 
 # --- M3 checks --------------------------------------------------------
 
-for sym in deriveMasterKey encrypt decrypt hmacSign wrapDataKey unwrapDataKey randomSalt newULID canonicalJSON; do
+for sym in deriveMasterKey encrypt decrypt hmacSign wrapDataKey unwrapDataKey randomSalt newULID canonicalJSON sealObject openObject chunkAAD chunkCount constantTimeBytesEqual; do
   if ! grep -qE "^export (async )?function ${sym}\b" lib/crypto.js; then
     echo "FAIL: lib/crypto.js missing $sym export"; exit 1
   fi
@@ -315,5 +316,7 @@ if ! grep -q '"anchors"' lib/idb.js; then
 fi
 
 node --no-warnings test/manifest-verification.test.mjs
+node --no-warnings test/chunked-crypto.test.mjs
+node --no-warnings test/manifest-chunked.test.mjs
 
 echo "OK: crate v1"

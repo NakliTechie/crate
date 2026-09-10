@@ -55,18 +55,43 @@ The AAD-on-UUID binding is the row-swap defense: if an attacker swaps two `objec
 ### File ciphertext
 
 - **Algorithm**: AES-256-GCM with the per-file data key.
-- **Layout**: 12-byte IV ‖ ciphertext+tag.
-- **AAD**: the file's UUID — same defense as the data-key wrap.
+- **Layout (v2, chunked — every write today)**: the plaintext is cut into `chunk_size`-byte pieces (8 MiB default; the size is recorded in the manifest, never assumed) and each piece is sealed independently:
 
-Each file gets a fresh IV per write. We never reuse an IV under the same key, even on `update()` — the data key is the same, but the IV changes.
+  ```
+  object body = chunk_0 ‖ chunk_1 ‖ … ‖ chunk_{n-1}
+  chunk_i     = IV_i (12 bytes) ‖ AES-GCM(data key, plaintext_i, AAD_i)
+  AAD_i       = utf8("<uuid>:<base64(IV_0)>:<i>:<n>")
+  n           = ceil(size / chunk_size), minimum 1
+  ```
+
+  An empty file is one authenticated empty chunk, so "zero chunks" is never a valid object and truncation-to-nothing is detectable.
+
+- **Layout (v1, single blob — files written before chunking landed)**: 12-byte IV ‖ ciphertext+tag, AAD = the file's UUID. Still readable; a file becomes v2 the next time it is written.
+
+Which layout a file uses is decided by the `chunk_size` field on its manifest entry. That field sits inside the HMAC-signed event, so the bucket cannot flip a file's format.
+
+Every field in the chunk AAD is load-bearing, and each one closes a specific splice:
+
+| AAD field | Attack it defeats |
+|---|---|
+| `uuid` | A chunk from a **different file** at the same index (the row-swap defense, per chunk). |
+| `IV_0` | A chunk from an **older version of the same file** at the same index. `IV_0` is random per write and is the manifest-signed `content_iv`, so every chunk is bound to the version it was written in. Single-blob AAD never needed this — one blob, one IV — but per-chunk framing does. |
+| `i` | **Reordering** chunks. |
+| `n` | **Truncating** or **extending** the chunk list; also rejects a chunk sealed under a different total even at the same index. |
+
+`openObject` additionally checks, before decrypting anything, that the body length is exactly `size + n × 28` — so most truncation and extension is caught without touching the key.
+
+Each chunk gets a fresh random IV, and each write gets a fresh `IV_0`. We never reuse an IV under the same key, even on `update()` — the data key is the same, but every IV changes.
+
+The rollback anchor from the 2026-05 audit (H1) is unchanged in meaning: the object's leading 12 bytes must equal the manifest-signed `content_iv`. For v2 that leading IV is `IV_0`, which is also inside every chunk's AAD — so a full-body rollback is caught by the anchor, and a partial one by the AAD.
 
 ## The signed manifest
 
 `.crate/manifest.jsonl.enc` is the source of truth for the folder shape. It's an append-only JSONL stream of events:
 
 ```json
-{"v":1,"ts":"2026-05-21T15:00:00Z","op":"create","path":"/notes/foo.md","uuid":"01JFX…","size":1234,"mime":"text/markdown","data_key_iv":"…","data_key_ct":"…","content_iv":"…","prev_sig":"","sig":"abc…"}
-{"v":1,"ts":"2026-05-21T15:01:00Z","op":"update","path":"/notes/foo.md","uuid":"01JFX…","size":1255,"data_key_iv":"…","data_key_ct":"…","content_iv":"…","prev_sig":"abc…","sig":"def…"}
+{"v":1,"ts":"2026-05-21T15:00:00Z","op":"create","path":"/notes/foo.md","uuid":"01JFX…","size":1234,"mime":"text/markdown","data_key_iv":"…","data_key_ct":"…","content_iv":"…","chunk_size":8388608,"prev_sig":"","sig":"abc…"}
+{"v":1,"ts":"2026-05-21T15:01:00Z","op":"update","path":"/notes/foo.md","uuid":"01JFX…","size":1255,"data_key_iv":"…","data_key_ct":"…","content_iv":"…","chunk_size":8388608,"prev_sig":"abc…","sig":"def…"}
 {"v":1,"ts":"2026-05-21T15:02:00Z","op":"delete","path":"/notes/foo.md","uuid":"01JFX…","prev_sig":"def…","sig":"ghi…"}
 ```
 
@@ -175,7 +200,7 @@ Threat model is precise. Some things are out of scope:
 
 Three files do the heavy lifting:
 
-- [`lib/crypto.js`](../lib/crypto.js) — every primitive: `deriveMasterKey`, `encrypt`, `decrypt`, `wrapDataKey`, `unwrapDataKey`, `hmacSign`. Pure WebCrypto; no third-party code in this file.
+- [`lib/crypto.js`](../lib/crypto.js) — every primitive: `deriveMasterKey`, `encrypt`, `decrypt`, `wrapDataKey`, `unwrapDataKey`, `hmacSign`, and the object framing `sealObject` / `openObject` (the only two functions that produce or consume an `objects/{uuid}` body). Pure WebCrypto; no third-party code in this file.
 - [`lib/manifest.js`](../lib/manifest.js) — the `Manifest` class: `append`, `verify`, `materialise`, `encryptToBytes`, `loadFromBytes`. JSONL parsing + the prev_sig chain.
 - [`lib/bucket.js`](../lib/bucket.js) — every network call. `signedGet`, `signedPut` (with `If-Match` for concurrent-write safety), `signedDelete`, `corsPreflight`, etc.
 

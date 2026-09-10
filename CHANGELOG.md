@@ -4,6 +4,16 @@ All notable changes to Crate. Format loosely follows [Keep a Changelog](https://
 
 ## [Unreleased]
 
+### Changed — chunked object framing (v2)
+
+Files are now encrypted as independent AES-256-GCM chunks (8 MiB plaintext each) rather than one blob, so the per-chunk memory ceiling no longer scales with file size and each chunk can later be uploaded as its own R2 multipart part. `lib/crypto.js` gains `sealObject` / `openObject`, the only producer and consumer of an `objects/{uuid}` body; the four read sites (`Crate.read`, folder download, folder preview, export) and three write sites that each carried their own copy of the parse-and-verify logic now share them.
+
+- **Per-chunk AAD is `uuid:base64(IV_0):index:total`.** Binding `IV_0` (the manifest-signed `content_iv`) closes the cross-version splice that per-chunk framing would otherwise open — a chunk from an older write of the same file at the same index no longer authenticates. Index and total close reorder and truncation; the body length is checked against the signed `size` before any decryption.
+- **Manifest `create` / `update` events gain an optional `chunk_size`.** Its presence is the v1/v2 discriminator and it lives inside the HMAC-signed event, so the bucket cannot change a file's format. It is per-version: an `update` without it reverts the entry to v1, so an older single-blob writer stays correct. v1 events are emitted byte-identically (the key is omitted, not `null`).
+- **v1 objects remain readable** through the same entry point; a file becomes v2 on its next write. No migration pass.
+- Tests: `test/chunked-crypto.test.mjs` (round-trips at chunk boundaries, 14 tamper classes, v1 compatibility, AAD canonical form) and `test/manifest-chunked.test.mjs`. `docs/encryption-model.md` updated in the same change.
+- **Cross-surface:** crate-agent does not yet speak v2. Until it does, files written by the browser are unreadable by the daemon (fail-closed, not silent). See `plan/2026-09-10-worker-carrier-onboarding.md` §5.3.
+
 ## [1.0.2] — 2026-05-22
 
 ### Security — extend H2 anchor coverage to the folder write path
