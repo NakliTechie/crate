@@ -13,6 +13,8 @@ All notable changes to Crate. Format loosely follows [Keep a Changelog](https://
 - CSP `connect-src` is now `'self' https:` — a carrier on your own domain is as reachable as one on `workers.dev`. Rationale in `docs/encryption-model.md` § What the page may talk to.
 - ETags from any transport are normalised (`cleanEtag`): Cloudflare's edge rewrites the ETag on compressed responses to a weak `W/"…"`, which silently broke the manifest's `If-Match`.
 - The original four-stage route remains as **Set up with your own bucket**.
+- **Fixed before release:** `carrierProbe()` spread the Worker's health record (which carries its own `ok: true`) *after* its verdict, so a mismatched `CARRIER_SECRET` — and a Worker with no secret or no bucket — reported "secret matches" and setup failed at the first write instead of at Verify. Found on the phone-viewport walk; the verdict now wins, and `test/carrier-transport.test.mjs` pins all six probe outcomes.
+- Status pills wrap on narrow screens instead of drawing their border through the second line.
 - Tests: `test/carrier-transport.test.mjs`. Walked end to end against a Deploy-button-provisioned Worker: setup, two uploads, and an independent read-back with matching SHA-256s.
 
 ### Changed — chunked object framing (v2)

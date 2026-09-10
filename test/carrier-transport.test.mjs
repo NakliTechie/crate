@@ -55,3 +55,36 @@ console.log("OK: carrier transport signs what crate-carrier verifies; creds file
   assert.equal(cleanEtag('W/"abc"'), "abc"); assert.equal(cleanEtag('"abc"'), "abc"); assert.equal(cleanEtag("abc"), "abc"); assert.equal(cleanEtag(null), "");
 }
 console.log("OK: ETag normalisation");
+
+// carrierProbe verdicts must survive the health record's own `ok: true`.
+// A mismatched secret (signed HEAD -> 401) is the case that matters most:
+// reporting success here lets setup proceed and fail at the first PUT.
+{
+  const { carrierProbe } = await import("../lib/bucket.js");
+  const health = { ok: true, service: "crate-carrier", ready: true, bucket: true };
+  const realFetch = globalThis.fetch;
+  const withStatus = (headStatus, h = health) => async (url, init = {}) => {
+    if ((init.method ?? "GET") === "HEAD") return new Response(null, { status: headStatus });
+    return new Response(JSON.stringify(h), { status: 200, headers: { "content-type": "application/json" } });
+  };
+  try {
+    globalThis.fetch = withStatus(401);
+    let r = await carrierProbe({ url: "https://w.example.workers.dev", secretKey: SECRET });
+    assert.equal(r.ok, false); assert.equal(r.authorized, false); assert.equal(r.status, 401);
+    globalThis.fetch = withStatus(404);
+    r = await carrierProbe({ url: "https://w.example.workers.dev", secretKey: SECRET });
+    assert.equal(r.ok, true); assert.equal(r.existing, false);
+    globalThis.fetch = withStatus(200);
+    r = await carrierProbe({ url: "https://w.example.workers.dev", secretKey: SECRET });
+    assert.equal(r.ok, true); assert.equal(r.existing, true);
+    globalThis.fetch = withStatus(500);
+    r = await carrierProbe({ url: "https://w.example.workers.dev", secretKey: SECRET });
+    assert.equal(r.ok, false);
+    globalThis.fetch = withStatus(404, { ...health, ready: false });
+    r = await carrierProbe({ url: "https://w.example.workers.dev", secretKey: SECRET });
+    assert.equal(r.ok, false); assert.match(r.message, /CARRIER_SECRET is not set/);
+    globalThis.fetch = withStatus(404, { ...health, bucket: false });
+    r = await carrierProbe({ url: "https://w.example.workers.dev", secretKey: SECRET });
+    assert.equal(r.ok, false); assert.match(r.message, /no R2 bucket/);
+  } finally { globalThis.fetch = realFetch; }
+}
