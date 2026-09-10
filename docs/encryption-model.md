@@ -145,6 +145,10 @@ The carrier secret is generated in the tab and pasted by you into Cloudflare's d
 
 The page's Content-Security-Policy allows `connect-src 'self' https:` — any HTTPS origin, and nothing else (no `http:`, no `ws:`, no `data:`). It used to enumerate the storage providers (`*.r2.cloudflarestorage.com`, `*.backblazeb2.com`, `*.your-objectstorage.com`, `*.amazonaws.com`, then `*.workers.dev` for the carrier). That list stopped being honest the moment the carrier URL became user-chosen: a Worker on your own domain is exactly as legitimate as one on `workers.dev`, and a CSP that only knew the second would silently break the first. What the allow-list bought was a narrow exfiltration guard against a compromised script; Crate has no third-party scripts (everything is vendored and inlined), `script-src 'self'` stays strict, and every request the page makes is signed by a key that never leaves the tab — so the list's protective value was small and its false-negative cost was real.
 
+## Passphrase strength
+
+The wizard suggests five words drawn with `crypto.getRandomValues` from the public 2048-word BIP-39 English list vendored in `lib/wordlist.js` — 11 bits per word, 55 bits total. A typed passphrase is scored by zxcvbn; 55 bits is the recommended floor, and the user may accept a weaker one down to 20 bits after the wizard shows the estimated time for one GPU to exhaust it at PBKDF2-600k speed (~16,000 guesses/s). Choosing to accept a weak passphrase is the user's decision, made with the number in front of them; the trivial is still refused.
+
 ## Credentials file (`.crate-creds`)
 
 To open a Crate you need your connection details plus your passphrase: for your own bucket that is four strings (bucket name, account ID, access key, secret key); for a one-click folder it is two (the Worker URL and the carrier secret). Typing them every time is hostile.

@@ -355,7 +355,7 @@
       <ul>
         <li><strong>A Cloudflare account.</strong> Takes 60 seconds at <a href="https://dash.cloudflare.com/sign-up">dash.cloudflare.com/sign-up</a>. No card needed for Crate's usage. Your helper Worker and your bucket live there.</li>
         <li><strong>A GitHub account.</strong> <a href="https://github.com/signup">github.com/signup</a>. Cloudflare copies Crate's tiny helper into it when you deploy; the first time, Cloudflare asks to connect the two accounts (a one-off consent screen).</li>
-        <li><strong>Somewhere to write seven words down.</strong> The wizard shows you a seven-word passphrase; you write it down and tick a box. (Prefer your own? There's a link for that — the strength bar must turn green, about six unrelated words.)</li>
+        <li><strong>Somewhere to write five words down.</strong> The wizard shows you a five-word passphrase; you write it down and tick a box. (Prefer your own? There's a link for that — the bar goes green at five unrelated words, and you may go lower after seeing the cost.)</li>
       </ul>
       <p>Time: the deploy itself takes about a minute; allow a few more the first time for account sign-up and the GitHub connection.</p>
       <div class="callout warn">
@@ -560,10 +560,10 @@
 
       <h4>Stage 4 — Passphrase (both paths)</h4>
       <p>
-        The wizard shows you <strong>seven random words</strong>, numbered. Write them down — on paper or in your password manager — tick <em>I've saved these seven words</em>, and click <strong>Next</strong>. That's your passphrase: about 77 bits of strength, comfortably past the 70 Crate requires, and words are far easier to copy correctly than symbols. <strong>Different words</strong> deals a new set.
+        The wizard shows you <strong>five random words</strong>, numbered. Write them down — on paper or in your password manager — tick <em>I've saved these five words</em>, and click <strong>Next</strong>. That's your passphrase: about 55 bits of strength, roughly 60,000 years for one GPU to exhaust, and words are far easier to copy correctly than symbols. <strong>Different words</strong> deals a new set. The words come from the public 2048-word BIP-39 list, shipped inside the page; the strength is in the random choice, not the list.
       </p>
       <p>
-        Prefer to choose your own? Click <em>I'd rather choose my own passphrase</em>. You'll type it twice and a strength bar (<a href="https://github.com/zxcvbn-ts/zxcvbn">zxcvbn</a>) must turn green — six unrelated words, or twelve-plus random mixed characters. Single words, <code>Password123!</code>-style, birthdays and lyrics score far lower than they look.
+        Prefer to choose your own? Click <em>I'd rather choose my own passphrase</em>. You'll type it twice; the strength bar (<a href="https://github.com/zxcvbn-ts/zxcvbn">zxcvbn</a>) turns green at the recommended 55 bits — five unrelated words, or twelve random mixed characters. Below that, the page tells you how long one GPU would need to crack it and lets you accept the trade-off with a tick; only the trivial (under 20 bits — a single word, a birthday) is refused outright.
       </p>
 
       <div class="screen">

@@ -33,7 +33,7 @@ About a minute, start to finish — **no API token, no CORS, no account ID**:
 
 **What you keep, forever:** two things — the `.crate-creds` file and your passphrase. Nothing else. The file holds your connection details, encrypted under the passphrase; the passphrase is the key to your files and cannot be reset by anyone. Lose the file and you can re-enter the details manually (Worker URL + the carrier secret, which you can rotate on the Worker). Lose the passphrase and the files are gone.
 
-**Passphrase, in one line:** the wizard shows you seven random words — write them down, tick the box, done. Prefer your own? The strength bar must turn green (about 70 bits by [zxcvbn](https://github.com/zxcvbn-ts/zxcvbn)'s estimate: six unrelated words, or twelve-plus random mixed characters).
+**Passphrase, in one line:** the wizard shows you five random words — write them down, tick the box, done. Prefer your own? Type it twice; the bar goes green at the recommended 55 bits ([zxcvbn](https://github.com/zxcvbn-ts/zxcvbn)'s estimate — five unrelated words, or twelve random mixed characters), and you may go lower after the page shows you how long one GPU would take to crack it. The word list is the public 2048-word BIP-39 English list, shipped inside the page; the strength comes from the random choice, not from the list being secret.
 
 The Worker is yours, in your account, and holds only an R2 *binding* — it sees ciphertext and nothing else; delete it and access ends. Prefer manual setup with your own API token? **Set up with your own bucket** is the original four-step route; its wizard walks through Cloudflare R2 (Hetzner, Backblaze and S3 work through the same fields if you know their endpoints).
 
