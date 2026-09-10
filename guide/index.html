@@ -355,7 +355,7 @@
       <ul>
         <li><strong>A Cloudflare account.</strong> Takes 60 seconds at <a href="https://dash.cloudflare.com/sign-up">dash.cloudflare.com/sign-up</a>. No card needed for Crate's usage. Your helper Worker and your bucket live there.</li>
         <li><strong>A GitHub account.</strong> <a href="https://github.com/signup">github.com/signup</a>. Cloudflare copies Crate's tiny helper into it when you deploy; the first time, Cloudflare asks to connect the two accounts (a one-off consent screen).</li>
-        <li><strong>A passphrase you'll remember.</strong> The wizard's strength bar must turn green — about six unrelated words, or hit <strong>Generate (7 words)</strong> and write them down.</li>
+        <li><strong>Somewhere to write seven words down.</strong> The wizard shows you a seven-word passphrase; you write it down and tick a box. (Prefer your own? There's a link for that — the strength bar must turn green, about six unrelated words.)</li>
       </ul>
       <p>Time: the deploy itself takes about a minute; allow a few more the first time for account sign-up and the GitHub connection.</p>
       <div class="callout warn">
@@ -560,14 +560,11 @@
 
       <h4>Stage 4 — Passphrase (both paths)</h4>
       <p>
-        Pick a passphrase. Crate measures strength with <a href="https://github.com/dropbox/zxcvbn">zxcvbn</a> and only lets you advance once you clear 70 bits of entropy. The hint card on this stage spells out exactly how to hit that bar:
+        The wizard shows you <strong>seven random words</strong>, numbered. Write them down — on paper or in your password manager — tick <em>I've saved these seven words</em>, and click <strong>Next</strong>. That's your passphrase: about 77 bits of strength, comfortably past the 70 Crate requires, and words are far easier to copy correctly than symbols. <strong>Different words</strong> deals a new set.
       </p>
-      <ul>
-        <li><strong>Easiest:</strong> hit <strong>Generate</strong>. 7 random dictionary words, ~77 bits. Write them down.</li>
-        <li><strong>Memorable:</strong> 5 or more unrelated common words — <code>correct-horse-battery-staple-seven</code>.</li>
-        <li><strong>Compact:</strong> 12+ random characters mixing case, digits, symbols — <code>7zL!q4Mn$ePr</code>.</li>
-        <li><strong>What doesn't work:</strong> single dictionary words (any length), <code>Password123!</code>-style, birthdays, song lyrics.</li>
-      </ul>
+      <p>
+        Prefer to choose your own? Click <em>I'd rather choose my own passphrase</em>. You'll type it twice and a strength bar (<a href="https://github.com/zxcvbn-ts/zxcvbn">zxcvbn</a>) must turn green — six unrelated words, or twelve-plus random mixed characters. Single words, <code>Password123!</code>-style, birthdays and lyrics score far lower than they look.
+      </p>
 
       <div class="screen">
         <div class="screen-chrome">
