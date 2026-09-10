@@ -31,6 +31,10 @@ About a minute, start to finish — **no API token, no CORS, no account ID**:
 3. When it says deployed, click **Visit** → **Continue to Crate**. Back in Crate the Worker's address is filled in: click **Verify**, then **Next →** and pick a passphrase.
 4. At **Done**, download the `.crate-creds` file and keep it with your passphrase — you need **both** to open the folder on another device ([Tijori](https://tijori.naklitechie.com), a password manager, a USB drive). Drop a file in. To open elsewhere: same URL → **Unlock an existing folder** → the creds file + your passphrase.
 
+**What you keep, forever:** two things — the `.crate-creds` file and your passphrase. Nothing else. The file holds your connection details, encrypted under the passphrase; the passphrase is the key to your files and cannot be reset by anyone. Lose the file and you can re-enter the details manually (Worker URL + the carrier secret, which you can rotate on the Worker). Lose the passphrase and the files are gone.
+
+**Passphrase rule, in one line:** the strength bar must be green — about 70 bits by [zxcvbn](https://github.com/zxcvbn-ts/zxcvbn)'s estimate, which is six unrelated words, or twelve-plus random mixed characters. **Generate (7 words)** hands you one that passes; write it down.
+
 The Worker is yours, in your account, and holds only an R2 *binding* — it sees ciphertext and nothing else; delete it and access ends. Prefer manual setup with your own API token? **Set up with your own bucket** is the original four-step route; its wizard walks through Cloudflare R2 (Hetzner, Backblaze and S3 work through the same fields if you know their endpoints).
 
 First visit pops a **What is Crate?** explainer; reopen it any time from **New here? See how Crate works** on the start screen.
