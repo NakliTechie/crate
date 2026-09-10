@@ -132,6 +132,15 @@ That's the privacy guarantee cutting both ways. The cryptographic property that 
 
 A future "Forgot passphrase? Use recovery phrase" flow would require a second credential bound to the same encryption — that's a v2 design decision (the schema would need an additional key-wrap slot in `.crate/crate.json`). v1 doesn't ship it.
 
+## Two carriers, one threat model
+
+Crate reaches the bucket one of two ways, chosen per folder and recorded in the credentials file's `provider`:
+
+- **`r2`** (and Hetzner / B2 / S3): the tab signs every request with AWS sig-v4 using an API token you created. The bucket owner sees ciphertext and access patterns.
+- **`carrier`**: the tab signs every request with HMAC-SHA256 over `METHOD\npath\nsorted-query\nts\nnonce` under a shared secret, and sends it to [`crate-carrier`](https://github.com/NakliTechie/crate-carrier) — a Worker *you* deploy into *your* Cloudflare account that holds an R2 *binding* to a bucket Cloudflare created for it. There is no API token anywhere. The Worker sees exactly what the bucket owner saw before: ciphertext and access patterns. Deleting it revokes access.
+
+The carrier secret is generated in the tab and pasted by you into Cloudflare's deploy form. Because you return to Crate through the Worker's own page (a fresh load of this origin), the secret is parked in `localStorage` under `crate:carrier-pending-v1` for the duration of onboarding only — written when generated, read once on that return, deleted the moment setup finishes (or on **Start over**, or on any successful unlock), and ignored after an hour. From then on it lives only inside the passphrase-wrapped credentials file. It grants ciphertext-only access to the bucket; it never touches a key or a plaintext byte.
+
 ## Credentials file (`.crate-creds`)
 
 To open a Crate you need five things: bucket name, account ID, access key, secret key, passphrase. The first four are bucket-identifying / accessing strings; the fifth is your secret. Typing all five every time is hostile.

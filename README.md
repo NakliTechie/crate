@@ -24,12 +24,14 @@ Same app on both.
 
 ## Getting started
 
-About 3 minutes, start to finish:
+About a minute, start to finish — **no API token, no CORS, no account ID**:
 
-1. Create an **R2 bucket** in your Cloudflare account (free tier: 10 GB + 1 M writes + 10 M reads / month) and a **scoped API token** with read+write on it.
-2. Open [`crate.naklios.dev`](https://crate.naklios.dev) → **Set up a new folder**. The wizard verifies the bucket, hands you the CORS JSON to paste, and walks you through a passphrase.
-3. At **Done**, download the encrypted `.crate-creds` file and keep it where you store secrets ([Tijori](https://tijori.naklitechie.com), a password manager, a USB drive).
-4. Drop a file in. To open elsewhere, visit the same URL → **Unlock an existing folder** → drop the creds file + type your passphrase.
+1. Open [`crate.naklios.dev`](https://crate.naklios.dev) → **Set up with one click**. Crate shows a secret it generated for you.
+2. Click **Deploy to Cloudflare**. Cloudflare copies the tiny [`crate-carrier`](https://github.com/NakliTechie/crate-carrier) Worker into your GitHub account, creates an R2 bucket for it, and asks for `CARRIER_SECRET` — paste the secret. (You'll need a free Cloudflare account and a GitHub account; Cloudflare connects the two once.)
+3. When it's deployed, click **Visit** → **Continue to Crate**. The Worker's address is filled in for you; pick a passphrase.
+4. At **Done**, download the encrypted `.crate-creds` file and keep it where you store secrets ([Tijori](https://tijori.naklitechie.com), a password manager, a USB drive). Drop a file in. To open elsewhere, visit the same URL → **Unlock an existing folder** → drop the creds file + type your passphrase.
+
+The Worker is yours, in your account, and holds only an R2 *binding* — it sees ciphertext and nothing else; delete it and access ends. Prefer to point Crate straight at a bucket with your own API token (R2, Hetzner, B2, S3)? **Set up with your own bucket** is the original four-step route and still works.
 
 First visit pops a **What is Crate?** explainer; reopen it any time from **New here? See how Crate works** on the start screen.
 

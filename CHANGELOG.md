@@ -4,6 +4,17 @@ All notable changes to Crate. Format loosely follows [Keep a Changelog](https://
 
 ## [Unreleased]
 
+### Added — one-click onboarding through a carrier Worker
+
+- **Set up with one click** on the landing page: a new `carrier` route (`welcome → carrier → passphrase → done`) replaces the four manual stages (bucket, credentials, CORS, account ID) with Cloudflare's Deploy button pointed at [`crate-carrier`](https://github.com/NakliTechie/crate-carrier). The Deploy flow provisions the R2 bucket itself — verified: no API token is created or entered anywhere.
+- `lib/bucket.js` gains a second transport selected by `region === "carrier"`: HMAC-signed requests to the user's Worker, `resolveBase()` for both providers, a `carrierProbe()` for the wizard, and automatic R2 multipart for bodies over 90 MiB (100 MiB is Cloudflare's per-request edge cap; measured working at 100 MiB in 7 parts). Every existing call site is unchanged — they already threaded `region`.
+- `.crate-creds` carries `provider: "carrier"` with `bucket.url`; the same envelope, same passphrase wrap. `Crate.open` / `bootstrap`, unlock, the folder's creds re-emit and the NakliOS handoff all go through the provider.
+- The Worker's own page links back to `crate.naklios.dev/#carrier=<its url>`, so the return trip needs no copying; the carrier secret is parked in `localStorage` for the duration of onboarding only (`docs/encryption-model.md` § Two carriers).
+- CSP `connect-src` now allows `https://*.workers.dev`. A carrier on a custom domain is not yet reachable from the page.
+- ETags from any transport are normalised (`cleanEtag`): Cloudflare's edge rewrites the ETag on compressed responses to a weak `W/"…"`, which silently broke the manifest's `If-Match`.
+- The original four-stage route remains as **Set up with your own bucket**.
+- Tests: `test/carrier-transport.test.mjs`. Walked end to end against a Deploy-button-provisioned Worker: setup, two uploads, and an independent read-back with matching SHA-256s.
+
 ### Changed — chunked object framing (v2)
 
 Files are now encrypted as independent AES-256-GCM chunks (8 MiB plaintext each) rather than one blob, so the per-chunk memory ceiling no longer scales with file size and each chunk can later be uploaded as its own R2 multipart part. `lib/crypto.js` gains `sealObject` / `openObject`, the only producer and consumer of an `objects/{uuid}` body; the four read sites (`Crate.read`, folder download, folder preview, export) and three write sites that each carried their own copy of the parse-and-verify logic now share them.
