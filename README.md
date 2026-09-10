@@ -27,11 +27,11 @@ Same app on both.
 About a minute, start to finish — **no API token, no CORS, no account ID**:
 
 1. Open [`crate.naklios.dev`](https://crate.naklios.dev) → **Set up with one click**. Crate shows a secret it generated for you.
-2. Click **Deploy to Cloudflare**. Cloudflare copies the tiny [`crate-carrier`](https://github.com/NakliTechie/crate-carrier) Worker into your GitHub account, creates an R2 bucket for it, and asks for `CARRIER_SECRET` — paste the secret. (You'll need a free Cloudflare account and a GitHub account; Cloudflare connects the two once.)
-3. When it's deployed, click **Visit** → **Continue to Crate**. The Worker's address is filled in for you; pick a passphrase.
-4. At **Done**, download the encrypted `.crate-creds` file and keep it where you store secrets ([Tijori](https://tijori.naklitechie.com), a password manager, a USB drive). Drop a file in. To open elsewhere, visit the same URL → **Unlock an existing folder** → drop the creds file + type your passphrase.
+2. Click **Deploy to Cloudflare**. Cloudflare copies the tiny [`crate-carrier`](https://github.com/NakliTechie/crate-carrier) Worker into your GitHub account, creates an R2 bucket for it, and asks for `CARRIER_SECRET` — paste the secret. (You'll need a free Cloudflare account and a free GitHub account; the first time, Cloudflare asks to connect the two.) The build takes about a minute — **its page does not update by itself; reload it** to see the result.
+3. When it says deployed, click **Visit** → **Continue to Crate**. Back in Crate the Worker's address is filled in: click **Verify**, then **Next →** and pick a passphrase.
+4. At **Done**, download the `.crate-creds` file and keep it with your passphrase — you need **both** to open the folder on another device ([Tijori](https://tijori.naklitechie.com), a password manager, a USB drive). Drop a file in. To open elsewhere: same URL → **Unlock an existing folder** → the creds file + your passphrase.
 
-The Worker is yours, in your account, and holds only an R2 *binding* — it sees ciphertext and nothing else; delete it and access ends. Prefer to point Crate straight at a bucket with your own API token (R2, Hetzner, B2, S3)? **Set up with your own bucket** is the original four-step route and still works.
+The Worker is yours, in your account, and holds only an R2 *binding* — it sees ciphertext and nothing else; delete it and access ends. Prefer manual setup with your own API token? **Set up with your own bucket** is the original four-step route; its wizard walks through Cloudflare R2 (Hetzner, Backblaze and S3 work through the same fields if you know their endpoints).
 
 First visit pops a **What is Crate?** explainer; reopen it any time from **New here? See how Crate works** on the start screen.
 
