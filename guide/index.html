@@ -335,7 +335,7 @@
     <section id="what">
       <h2><span class="num">1</span>What you're getting</h2>
       <p>
-        In one paragraph: a tab in your browser that looks like a file manager, backed by an S3-compatible bucket (Cloudflare R2 by default). Drop files in; they encrypt on your machine; the bucket stores ciphertext. Open the URL on your phone with the same passphrase; the same folder appears. Optionally run a small daemon on your laptop and the same folder lives at <code>~/crate/</code> as regular plaintext files.
+        In one paragraph: a tab in your browser that looks like a file manager, backed by a storage bucket you own (Cloudflare R2 by default — set up for you in one click). Drop files in; they encrypt on your machine; the bucket stores ciphertext. Open the URL on your phone with the same passphrase; the same folder appears. Optionally run a small daemon on your laptop and the same folder lives at <code>~/crate/</code> as regular plaintext files.
       </p>
       <p>
         What makes it different from Dropbox / iCloud / Google Drive:
@@ -351,12 +351,13 @@
     <!-- ===================== 2. BEFORE ===================== -->
     <section id="prepare">
       <h2><span class="num">2</span>Before you start</h2>
-      <p>You'll need three things in front of you:</p>
+      <p>You'll need three things in front of you, all free:</p>
       <ul>
-        <li><strong>A Cloudflare account.</strong> Free, takes 60 seconds to create at <a href="https://dash.cloudflare.com/sign-up">dash.cloudflare.com/sign-up</a>. No credit card required for the free tier.</li>
-        <li><strong>About 3 minutes.</strong> The wizard walks you through everything; the longest step is waiting for CORS to propagate.</li>
-        <li><strong>A passphrase you'll remember.</strong> Aim for 4 or more unrelated words (a "passphrase," not a password). Crate's wizard can generate one if you don't want to think one up.</li>
+        <li><strong>A Cloudflare account.</strong> Takes 60 seconds at <a href="https://dash.cloudflare.com/sign-up">dash.cloudflare.com/sign-up</a>. No card needed for Crate's usage. Your helper Worker and your bucket live there.</li>
+        <li><strong>A GitHub account.</strong> <a href="https://github.com/signup">github.com/signup</a>. Cloudflare copies Crate's tiny helper into it when you deploy; the first time, Cloudflare asks to connect the two accounts (a one-off consent screen).</li>
+        <li><strong>A passphrase you'll remember.</strong> The wizard's strength bar must turn green — about six unrelated words, or hit <strong>Generate (7 words)</strong> and write them down.</li>
       </ul>
+      <p>Time: the deploy itself takes about a minute; allow a few more the first time for account sign-up and the GitHub connection.</p>
       <div class="callout warn">
         <span class="callout-label">heads up</span>
         Crate cannot recover your passphrase. If you forget it AND lose your credentials file (you'll get one at the end of setup), the files in your bucket are unreadable random bytes forever. Plan for redundancy — see <a href="#backup">section 6</a>.
@@ -386,7 +387,7 @@
               </li>
               <li>
                 <span class="icon">🪣</span>
-                <span class="txt"><strong>Your storage, your keys</strong><span>Bring your own bucket — Cloudflare R2, Hetzner, Backblaze, or AWS. We never hold your data and there's nothing to subscribe to.</span></span>
+                <span class="txt"><strong>Your storage, your keys</strong><span>A bucket in your own Cloudflare account, set up for you in one click — or bring your own (R2, Hetzner, Backblaze, AWS). We never hold your data and there's nothing to subscribe to.</span></span>
               </li>
               <li>
                 <span class="icon">🚫</span>
@@ -394,11 +395,12 @@
               </li>
             </ul>
             <div class="mock-landing-actions">
-              <button class="mock-btn block primary">Set up a new folder</button>
+              <button class="mock-btn block primary">Set up with one click</button>
+              <button class="mock-btn block">Set up with your own bucket</button>
               <button class="mock-btn block">Unlock an existing folder</button>
             </div>
             <p class="mock-landing-help"><span class="mock-link">New here? See how Crate works</span></p>
-            <p class="mock-landing-meta">You'll need a free Cloudflare account, about 3 minutes, and a passphrase you'll remember.</p>
+            <p class="mock-landing-meta">Before you start — you'll need: a free Cloudflare account · a free GitHub account · a passphrase you'll remember.</p>
           </div>
         </div>
       </div>
@@ -407,10 +409,32 @@
         On your very first visit, a short <strong>What is Crate?</strong> explainer opens over this screen automatically — the same privacy promise plus how Crate works in three steps, with a <strong>Full setup guide</strong> button that expands the detailed Cloudflare walk-through. It auto-opens only once; afterwards you can reopen it any time from the <strong>New here? See how Crate works</strong> link.
       </p>
       <p>
-        For a first-time setup, click <strong>Set up a new folder</strong>. (If you've onboarded already and you're back, see <a href="#unlock">section 5</a>.) The wizard has five stages: Bucket → Credentials → CORS → Passphrase → Done.
+        There are two ways in. <strong>Set up with one click</strong> is the one to use unless you already run your own bucket and API token. (If you've onboarded already and you're back, see <a href="#unlock">section 5</a>.)
       </p>
 
-      <h3>Stage 1 — Bucket</h3>
+      <h3>The one-click path</h3>
+      <p>
+        Click <strong>Set up with one click</strong>. The wizard has three stages: Carrier → Passphrase → Done. "Carrier" is a tiny program (a Cloudflare Worker) that Cloudflare deploys into <em>your</em> account, holding a bucket it creates for you. It only ever sees encrypted bytes, and deleting it ends its access.
+      </p>
+      <ol>
+        <li><strong>Copy the secret.</strong> Crate shows a connection secret it generated for you. This is <em>not</em> your passphrase — that comes later. Click <strong>Copy secret</strong>.</li>
+        <li><strong>Deploy.</strong> Click <strong>Deploy to Cloudflare ↗</strong>. On Cloudflare's page: pick your GitHub account (first time only, Cloudflare asks to connect it), paste the secret into the <code>CARRIER_SECRET</code> field, leave everything else as suggested, click <strong>Deploy</strong>.</li>
+        <li><strong>Wait about a minute — then reload.</strong> Cloudflare's build page does not update by itself. Reload it; when it says deployed, click <strong>Visit</strong>.</li>
+        <li><strong>Continue to Crate.</strong> The Worker's own page has one button. It brings you back to the wizard with the Worker's address already filled in. (If you closed the tab, paste the address — it's <code>https://crate-carrier-….workers.dev</code>, shown under Workers &amp; Pages in your Cloudflare dashboard.)</li>
+        <li><strong>Verify, then Next.</strong> Crate checks the Worker is up and the secret matches. Click <strong>Next →</strong>.</li>
+        <li><strong>Passphrase</strong> and <strong>Done</strong> — same as below, from "Stage 4" onwards.</li>
+      </ol>
+      <div class="callout">
+        <span class="callout-label">what you never do</span>
+        No API token, no CORS policy, no account ID. The only thing you paste is the secret, once. What you keep afterwards is the <code>.crate-creds</code> file (downloaded at Done) and your passphrase — nothing else.
+      </div>
+
+      <h3>Set up with your own bucket (the manual path)</h3>
+      <p>
+        For people who already have a Cloudflare R2 bucket and want to point Crate at it with their own API token. Five stages: Bucket → Credentials → CORS → Passphrase → Done.
+      </p>
+
+      <h4>Stage 1 — Bucket</h4>
       <p>
         Crate suggests a name like <code>crate-x7k2m9p4</code>. Copy the suggested name, then click the <strong>Open Cloudflare R2 ↗</strong> button. In Cloudflare's R2 dashboard, click <strong>Create bucket</strong>, paste the name, leave region on <em>Automatic</em>, click <strong>Create</strong>. Come back to the Crate tab. Paste your Cloudflare <strong>Account ID</strong> (you'll find it in the R2 sidebar) into the second field. Click <strong>Verify</strong>.
       </p>
@@ -444,7 +468,7 @@
         </div>
       </div>
 
-      <h3>Stage 2 — Credentials</h3>
+      <h4>Stage 2 — Credentials</h4>
       <p>
         Crate now needs an API token scoped to <em>only</em> this bucket. Click <strong>Open R2 API Tokens ↗</strong> → <strong>Create API Token</strong>:
       </p>
@@ -484,7 +508,7 @@
         </div>
       </div>
 
-      <h3>Stage 3 — CORS</h3>
+      <h4>Stage 3 — CORS</h4>
       <p>
         Your browser needs explicit permission to talk to your bucket. Crate generates the exact JSON you need and gives you a direct deep-link to the right Cloudflare page (the bucket's CORS settings — not the generic R2 overview).
       </p>
@@ -534,7 +558,7 @@
         The CORS JSON tells Cloudflare which web origin is allowed to talk to your bucket from a browser. It does <em>not</em> give Crate or anyone else read access to your files — it only controls headers Cloudflare sends back. The actual files are still encrypted before they ever leave your tab.
       </div>
 
-      <h3>Stage 4 — Passphrase</h3>
+      <h4>Stage 4 — Passphrase (both paths)</h4>
       <p>
         Pick a passphrase. Crate measures strength with <a href="https://github.com/dropbox/zxcvbn">zxcvbn</a> and only lets you advance once you clear 70 bits of entropy. The hint card on this stage spells out exactly how to hit that bar:
       </p>
@@ -583,7 +607,7 @@
         </div>
       </div>
 
-      <h3>Stage 5 — Done</h3>
+      <h4>Stage 5 — Done (both paths)</h4>
       <p>
         Crate now writes a small <code>.crate/crate.json</code> + an empty manifest to your bucket. When that finishes you see:
       </p>
@@ -597,16 +621,16 @@
           <div class="mock-progress"><span class="step">welcome</span> · <span class="step">bucket</span> · <span class="step">credentials</span> · <span class="step">cors</span> · <span class="step">passphrase</span> · <span class="step current">done</span></div>
           <div class="mock-stage">
             <h2>Your folder is ready</h2>
-            <p class="muted">Bucket connected. Credentials accepted. CORS configured. Passphrase set. Encrypted metadata written to the bucket.</p>
+            <p class="muted">Carrier verified. Passphrase set. Encrypted metadata written to your bucket through your Worker.</p>
             <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.7rem 0.9rem; margin: 0.7rem 0; font-size: 0.88rem;">
-              <div style="font-weight: 500; margin-bottom: 0.3rem;">Make future unlocks one step</div>
+              <div style="font-weight: 500; margin-bottom: 0.3rem;">Save what you'll need to reopen this folder</div>
               <p style="margin: 0; color: var(--muted); font-size: 0.85rem;">
-                Download a small encrypted credentials file. With this file + your passphrase, you can unlock from any device in two clicks instead of typing five strings. The file is useless without your passphrase. Keep it like a backup credential.
+                Download your credentials file and keep it with your passphrase. On another device you unlock with this file + your passphrase. The file holds your connection details, encrypted — it does not replace your passphrase, and it is useless without it.
               </p>
             </div>
             <div style="display:flex; flex-direction:column; gap:0.4rem; margin-top:0.7rem;">
               <button class="mock-btn block primary">Open your folder</button>
-              <button class="mock-btn block">↓ Download credentials file (recommended)</button>
+              <button class="mock-btn block">↓ Download credentials file</button>
               <button class="mock-btn block">Start a new onboarding</button>
             </div>
           </div>
@@ -615,7 +639,7 @@
 
       <div class="callout warn">
         <span class="callout-label">do this now</span>
-        Click <strong>↓ Download credentials file (recommended)</strong> before opening your folder. You'll get a small file named <code>&lt;bucket-name&gt;.crate-creds</code>. Save it the same way you'd save a backup password — 1Password, password manager, encrypted USB. Anyone with this file <em>and</em> your passphrase can read your folder; either alone is useless. Future unlocks become drop-file + type-passphrase.
+        Click <strong>↓ Download credentials file</strong> before opening your folder. You'll get a small file named <code>&lt;name&gt;.crate-creds</code>. Save it the same way you'd save a backup password — a password manager, an encrypted USB. Anyone with this file <em>and</em> your passphrase can read your folder; either alone is useless. From now on the two things you keep are this file and your passphrase — every other device unlocks with exactly those.
       </div>
     </section>
 
@@ -759,7 +783,7 @@
             </div>
             <button class="mock-btn block primary" disabled>Unlock folder</button>
             <p class="muted" style="font-size: 0.85rem; margin-top: 0.7rem;">
-              <span style="color: var(--link); text-decoration: underline;">No file? Enter the 5 details manually.</span>
+              <span style="color: var(--link); text-decoration: underline;">No file? Enter the details manually.</span>
             </p>
           </div>
         </div>
@@ -792,19 +816,16 @@
         </div>
       </div>
 
-      <h3>The fallback — five fields, no file</h3>
+      <h3>The fallback — no file</h3>
       <p>
-        If you lost the credentials file (or you're on a brand-new device and haven't transferred it yet), click <strong>No file? Enter the 5 details manually.</strong> The unlock screen reveals the original 5-input form:
+        If you lost the credentials file (or you're on a brand-new device and haven't transferred it yet), click <strong>No file? Enter the details manually.</strong> Choose how you set up:
       </p>
       <ul>
-        <li>Bucket name</li>
-        <li>Cloudflare Account ID (32 hex characters)</li>
-        <li>Access Key (~32 chars)</li>
-        <li>Secret Access Key (~64 chars)</li>
-        <li>Folder passphrase</li>
+        <li><strong>One click (carrier):</strong> the Worker URL (under Workers &amp; Pages in your Cloudflare dashboard) + the carrier secret + your passphrase. Lost the secret too? Set a new <code>CARRIER_SECRET</code> on the Worker (Settings → Variables and Secrets) and use that — the old one stops working, which is also how you revoke a lost credentials file.</li>
+        <li><strong>My own bucket:</strong> bucket name, Cloudflare Account ID, Access Key, Secret Access Key, passphrase.</li>
       </ul>
       <p>
-        Tedious but viable — and you can re-download a fresh <code>.crate-creds</code> file from the folder UI's <strong>🔐 Credentials</strong> button once you're back in.
+        Either way, re-download a fresh <code>.crate-creds</code> file from the folder UI's <strong>🔐 Credentials</strong> button once you're back in.
       </p>
 
       <h3>Refresh keeps you logged in</h3>
@@ -874,7 +895,7 @@
         <a href="https://github.com/NakliTechie/crate-agent"><code>crate-agent</code></a> is a small Go binary that keeps a folder on your laptop in sync with your Crate. It runs as a background service; you edit files in <code>~/crate/</code> with any tool (vim, VS Code, drag-drop in Finder), the daemon encrypts + uploads them. Browser-side changes download + decrypt to the same folder.
       </p>
       <p>
-        The daemon never holds your bucket credentials — it pairs with the browser via a one-time token and talks to a transport (the Hub bucket-proxy), not directly to R2.
+        The daemon never holds your R2 access keys. With a one-click folder it talks to your carrier Worker using the same carrier secret the browser uses (ciphertext-only access); with a hub-based setup it pairs via a one-time token. Either way it never sees plaintext in transit — it decrypts on your machine, with your passphrase.
       </p>
 
       <h3>Install</h3>
@@ -898,13 +919,13 @@ chmod +x crate-agent && sudo mv crate-agent /usr/local/bin/
       <p>(Windows: v1.x roadmap.)</p>
 
       <h3>Pair + start</h3>
+      <p><strong>One-click folder</strong> (crate-agent v1.3 or later):</p>
       <ol>
-        <li>In your Crate folder UI, click <strong>Pair an agent</strong>. A modal shows a <code>CRATE-PAIR-…</code> token + QR code with a 15-minute countdown.</li>
-        <li>Copy the token to clipboard.</li>
-        <li>In a terminal: <code>crate-agent pair</code>. Paste the token. Type your folder passphrase.</li>
-        <li><code>crate-agent doctor</code> to verify the install.</li>
+        <li>In your Crate folder UI, click <strong>Pair an agent</strong>. The modal shows the exact command and a button that copies your carrier secret.</li>
+        <li>In a terminal: <code>crate-agent pair --carrier https://crate-carrier-….workers.dev</code>. Paste the carrier secret, then type your folder passphrase. It verifies against the Worker and runs <code>doctor</code>.</li>
         <li><code>crate-agent start</code> to run in the foreground, or <code>crate-agent install-service</code> to install as a launchd / systemd-user unit that starts at login.</li>
       </ol>
+      <p><strong>Hub-based folder:</strong> <strong>Pair an agent</strong> shows a <code>CRATE-PAIR-…</code> token + QR code with a 15-minute countdown; run <code>crate-agent pair</code>, paste the token, type your passphrase, then <code>doctor</code> and <code>start</code> as above.</p>
       <p>
         Once running, <code>~/crate/</code> is bidirectional with the browser within ~15 seconds. Full daemon docs in the <a href="https://github.com/NakliTechie/crate-agent">crate-agent repo</a>.
       </p>
@@ -921,7 +942,7 @@ chmod +x crate-agent && sudo mv crate-agent /usr/local/bin/
         <li><strong>Per-file data keys</strong> = fresh 32 random bytes per file, wrapped by AES-256-GCM under the master key. Sealed with the file's UUID as additional-authenticated-data so a row-swap attack on the bucket fails authentication.</li>
         <li><strong>Payload sealing</strong> = AES-256-GCM with the per-file data key + a fresh 12-byte IV per write.</li>
         <li><strong>Signed manifest</strong> = JSONL log of every event (<code>create</code>, <code>update</code>, <code>delete</code>, <code>move</code>, <code>mkdir</code>), each event HMAC-SHA256-signed with the master key; each event carries the previous event's signature → tamper-evident chain. The entire manifest is then encrypted at rest.</li>
-        <li><strong>Credentials file</strong> = the four bucket strings (name, account ID, access key, secret key) bundled into a JSON envelope encrypted with AES-256-GCM under a key derived by PBKDF2-SHA256(passphrase, salt). Independent salt from the bucket's salt; useless without the passphrase.</li>
+        <li><strong>Credentials file</strong> = your connection details (for a one-click folder: the Worker URL + carrier secret; for your own bucket: name, account ID, access key, secret key) in a JSON envelope encrypted with AES-256-GCM under a key derived by PBKDF2-SHA256(passphrase, salt). Independent salt from the bucket's salt; useless without the passphrase.</li>
         <li><strong>Concurrent-write safety</strong> = ETag-conditional PUT (<code>If-Match</code>) with replay-on-412. Two tabs PUTting at the same time → second one gets 412 → re-GET, splice pending events on top, retry up to 3 times.</li>
       </ul>
       <h3>What we explicitly don't protect against</h3>

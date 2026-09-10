@@ -48,7 +48,7 @@ The credentials file is the default path; there's a fallback if you lost it:
 | You have | How |
 |---|---|
 | Creds file + passphrase | Drop file + type passphrase (default) |
-| Passphrase + the 4 bucket strings | "No file? Enter the 5 details manually." |
+| Passphrase + your details (one-click: Worker URL + carrier secret; own bucket: the 4 bucket strings) | "No file? Enter the details manually." |
 | Nothing | Can't recover — v1 has no recovery credential. Back up first. |
 
 Skipped the download? The folder UI's `🔐 Credentials` button re-emits the file any time after unlock.

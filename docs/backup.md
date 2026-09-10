@@ -71,7 +71,7 @@ You rotated your R2 token in the Cloudflare dashboard (or revoked the old one). 
 
 1. Refresh the browser tab (or open a new one).
 2. Choose **Unlock an existing folder** on Welcome.
-3. Enter the same bucket name + Account ID + passphrase, with the **new** Access Key + Secret.
+3. Enter the same bucket name + Account ID + passphrase, with the **new** Access Key + Secret. (One-click folder: set a new `CARRIER_SECRET` on the Worker instead, then unlock manually with the Worker URL + the new secret + your passphrase, and re-download the creds file.)
 4. The folder unlocks against the new credentials.
 
 You don't need to migrate any data. The bucket creds aren't stored anywhere — they live in browser memory for the active session only. Crate validates them against R2 on each operation; the new ones take over the moment you re-unlock.

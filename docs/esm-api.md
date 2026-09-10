@@ -151,7 +151,7 @@ appears in the daemon's `~/crate/` within seconds (and vice-versa).
 </script>
 ```
 
-Run from any origin the bucket's CORS allows.
+Run from any origin the bucket's CORS allows (or, for a carrier folder, any origin in the Worker's `ALLOW_ORIGINS`).
 
 ## Versioning
 

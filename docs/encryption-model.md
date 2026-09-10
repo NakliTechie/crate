@@ -147,7 +147,7 @@ The page's Content-Security-Policy allows `connect-src 'self' https:` — any HT
 
 ## Credentials file (`.crate-creds`)
 
-To open a Crate you need five things: bucket name, account ID, access key, secret key, passphrase. The first four are bucket-identifying / accessing strings; the fifth is your secret. Typing all five every time is hostile.
+To open a Crate you need your connection details plus your passphrase: for your own bucket that is four strings (bucket name, account ID, access key, secret key); for a one-click folder it is two (the Worker URL and the carrier secret). Typing them every time is hostile.
 
 The credentials file bundles the first four into a single artifact encrypted under the fifth. The user downloads it at first-time setup; on every subsequent unlock they pick the file + type the passphrase. Two clicks instead of five.
 
@@ -180,7 +180,7 @@ The `hint` field is plaintext so the unlock UI can show "Welcome back to `<bucke
 
 ### Threat model
 
-The file doesn't weaken anything compared to typing the five strings directly:
+The file doesn't weaken anything compared to typing the details directly:
 
 | Attacker has | Result |
 |---|---|
