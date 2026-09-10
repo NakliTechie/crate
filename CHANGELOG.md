@@ -10,7 +10,7 @@ All notable changes to Crate. Format loosely follows [Keep a Changelog](https://
 - `lib/bucket.js` gains a second transport selected by `region === "carrier"`: HMAC-signed requests to the user's Worker, `resolveBase()` for both providers, a `carrierProbe()` for the wizard, and automatic R2 multipart for bodies over 90 MiB (100 MiB is Cloudflare's per-request edge cap; measured working at 100 MiB in 7 parts). Every existing call site is unchanged — they already threaded `region`.
 - `.crate-creds` carries `provider: "carrier"` with `bucket.url`; the same envelope, same passphrase wrap. `Crate.open` / `bootstrap`, unlock, the folder's creds re-emit and the NakliOS handoff all go through the provider.
 - The Worker's own page links back to `crate.naklios.dev/#carrier=<its url>`, so the return trip needs no copying; the carrier secret is parked in `localStorage` for the duration of onboarding only (`docs/encryption-model.md` § Two carriers).
-- CSP `connect-src` now allows `https://*.workers.dev`. A carrier on a custom domain is not yet reachable from the page.
+- CSP `connect-src` is now `'self' https:` — a carrier on your own domain is as reachable as one on `workers.dev`. Rationale in `docs/encryption-model.md` § What the page may talk to.
 - ETags from any transport are normalised (`cleanEtag`): Cloudflare's edge rewrites the ETag on compressed responses to a weak `W/"…"`, which silently broke the manifest's `If-Match`.
 - The original four-stage route remains as **Set up with your own bucket**.
 - Tests: `test/carrier-transport.test.mjs`. Walked end to end against a Deploy-button-provisioned Worker: setup, two uploads, and an independent read-back with matching SHA-256s.

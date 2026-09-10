@@ -141,6 +141,10 @@ Crate reaches the bucket one of two ways, chosen per folder and recorded in the 
 
 The carrier secret is generated in the tab and pasted by you into Cloudflare's deploy form. Because you return to Crate through the Worker's own page (a fresh load of this origin), the secret is parked in `localStorage` under `crate:carrier-pending-v1` for the duration of onboarding only — written when generated, read once on that return, deleted the moment setup finishes (or on **Start over**, or on any successful unlock), and ignored after an hour. From then on it lives only inside the passphrase-wrapped credentials file. It grants ciphertext-only access to the bucket; it never touches a key or a plaintext byte.
 
+### What the page may talk to
+
+The page's Content-Security-Policy allows `connect-src 'self' https:` — any HTTPS origin, and nothing else (no `http:`, no `ws:`, no `data:`). It used to enumerate the storage providers (`*.r2.cloudflarestorage.com`, `*.backblazeb2.com`, `*.your-objectstorage.com`, `*.amazonaws.com`, then `*.workers.dev` for the carrier). That list stopped being honest the moment the carrier URL became user-chosen: a Worker on your own domain is exactly as legitimate as one on `workers.dev`, and a CSP that only knew the second would silently break the first. What the allow-list bought was a narrow exfiltration guard against a compromised script; Crate has no third-party scripts (everything is vendored and inlined), `script-src 'self'` stays strict, and every request the page makes is signed by a key that never leaves the tab — so the list's protective value was small and its false-negative cost was real.
+
 ## Credentials file (`.crate-creds`)
 
 To open a Crate you need five things: bucket name, account ID, access key, secret key, passphrase. The first four are bucket-identifying / accessing strings; the fifth is your secret. Typing all five every time is hostile.
