@@ -209,11 +209,7 @@ priorities and ordering live in [`plan/pending.md`](../plan/pending.md).
 
 - ~~Trash / undelete with retention~~ — shipped in v1.2 (browser-side: the object stays 30 days, `restore` is a plain `create`, `purge` records removal; no bucket lifecycle rule needed, so it works on every provider and through the carrier).
 - ~~PWA / offline~~ — shipped in v1.2 (installable; offline open lists the last-seen folder read-only). Not built: queued offline writes.
-- **Full-text search.** Per-folder inverted index, encrypted and
-  stored as `.crate/index.<uuid>.enc`. Indexing runs in a Web Worker
-  on write. Search runs entirely in-browser; the bucket sees ciphertext.
-  No comparable in the table has this — it would be a genuine
-  differentiator, not just gap-closing.
+- ~~Full-text search~~ — shipped in v1.2 as a per-device encrypted index (no bucket-side index, so nothing to merge across devices).
 - **PDF / video / audio preview.** PDFs via pdf.js; video/audio via
   `<video>`/`<audio>` with a streaming decrypt adapter (we already
   decrypt to `Blob`; need range-request support on the bucket reader).

@@ -368,5 +368,6 @@ node --no-warnings test/crate-vault.test.mjs
 node --no-warnings test/trash.test.mjs
 node --no-warnings test/sigv4-presign.test.mjs
 node --no-warnings test/share.test.mjs
+node --no-warnings test/search.test.mjs
 
 echo "OK: crate v1"

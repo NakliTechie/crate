@@ -13,6 +13,10 @@ All notable changes to Crate. Format loosely follows [Keep a Changelog](https://
 - ESM API (additive): `Crate.open({ recoveryEntropy })`, `crate.setPassphrase(newPassphrase)`, `crate.enableRecovery(entropy)`, `crate.hasRecovery`.
 - `lib/vault.js`: `sealVault` / `openVault` / `rewrapVault` — the one place that knows the key slots; unlock-via-phrase (phase 5) and enable-recovery (phase 6) build on it. Tests: `test/vault.test.mjs`, `test/crate-vault.test.mjs` (bootstrap + open by either credential against an in-memory bucket, wrong credential named, legacy v1.0 still opens).
 
+### Added — search inside files
+
+- The top-bar search now also looks **inside text files** (`.md`, `.txt`, code, JSON, CSV…, up to 2 MB each). The first time, an **In file contents** section offers to index them; indexing reads the files in this tab and keeps an inverted index in IndexedDB **encrypted under the folder's content key** — nothing about it reaches the bucket, and the disk holds ciphertext. Rebuilds are incremental (only changed files are read; **Refresh (n changed)** appears when the tree moved on) and each device keeps its own, so there is nothing to merge. Every word must match, prefixes count, exact matches rank first; hits show a snippet. Tests: `test/search.test.mjs`.
+
 ### Added — install it, open it offline
 
 - **Installable** (`manifest.webmanifest`, icons) and served by a service worker (`sw.js`) that caches this origin's static files network-first with a short timeout — a deploy still propagates on the next load, a dead network still opens the app. Bucket and carrier traffic never passes through it.

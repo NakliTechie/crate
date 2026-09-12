@@ -47,6 +47,8 @@ const PRECACHE = [
   "./lib/sync-client.js",
   "./lib/vault.js",
   "./lib/wordlist.js",
+  "./lib/read.js",
+  "./lib/search.js",
   "./lib/vendor/client-zip/index.js",
   "./lib/vendor/zxcvbn-ts/core.umd.min.js",
   "./lib/vendor/zxcvbn-ts/language-common.umd.min.js",
