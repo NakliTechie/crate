@@ -93,7 +93,7 @@ DCS) are covered as [cousins](#cousins) below.
 | Cross-device sync | Yes — via bucket (manifest converges) | Via cloud-provider sync (Dropbox, etc.) | Via shared repository | Via shared repository | Via shared mount | Yes — native |
 | Concurrent writers | ETag-conditional PUT, last-writer-wins | Vault-level (cloud sync arbitrates) | Repository lock | Repository lock | POSIX semantics | Server-side ordering |
 | CRDT / proper merge | No | No | N/A | N/A | N/A | No |
-| Share single file (public link) | No | No | No | No | No | **Yes** (link + key in fragment) |
+| Share single file (public link) | **Yes** — expiring presigned URL + per-file key in the fragment (v1.2) | No | No | No | No | **Yes** (link + key in fragment) |
 | Shared folders (multi-user) | No | No | Shared repository (everyone has full passphrase) | Same | Yes — multi-tenant | **Yes** (per-folder key share) |
 
 ## Ops
@@ -223,13 +223,7 @@ priorities and ordering live in [`plan/pending.md`](../plan/pending.md).
 
 ### Sharing & collaboration
 
-- **Per-file share links.** `https://crate.naklios.dev/share#<uuid>:<key>`
-  — the key fragment never hits the server (URL fragments aren't sent
-  on HTTP), the link recipient hits the bucket directly via a scoped
-  read-only signed URL we issue from the owner's tab. MEGA and Filen
-  ship this pattern and it's the single biggest "why isn't this in
-  Crate?" question. Requires the bucket to accept signed read URLs,
-  which R2 / S3 / B2 / Hetzner all do.
+- ~~Per-file share links~~ — shipped in v1.2 (`#share=` fragment, presigned GET, 1 h / 1 d / 7 d).
 - **Shared folders with separate trust circle.** Per-folder
   sub-namespace with its own key, wrapped under each member's master
   key. Lets a Crate owner share `/shared/family/` with a partner
