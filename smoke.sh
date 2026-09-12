@@ -284,6 +284,13 @@ fi
 if ! grep -q "recovery: renderRecovery" lib/onboarding.js; then
   echo "FAIL: lib/onboarding.js missing the recovery stage"; exit 1
 fi
+for f in sw.js manifest.webmanifest lib/offline.js icons/icon-192.png icons/icon-512.png; do
+  if [[ ! -s "$f" ]]; then echo "FAIL: PWA file missing: $f"; exit 1; fi
+done
+# every lib/*.js the page can load is in the service worker's precache list
+for f in lib/*.js; do
+  if ! grep -q "\./$f\"" sw.js; then echo "FAIL: sw.js precache is missing $f"; exit 1; fi
+done
 if ! grep -q "entriesForView" lib/folder.js; then
   echo "FAIL: lib/folder.js missing entriesForView — Recent/Photos views not wired"; exit 1
 fi

@@ -12,6 +12,11 @@
     <meta name="theme-color" content="#0f0f0f" media="(prefers-color-scheme: dark)" />
     <meta name="color-scheme" content="light dark" />
     <title>Crate — personal cloud folder</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Crate" />
     <style>
       :root {
         /* Design tokens — light by default (2026-09-11 shell redesign).
@@ -605,6 +610,8 @@
         background: var(--ok-soft); color: var(--ok); font-size: 0.9rem;
       }
       .banner-error { border-color: var(--error); background: var(--error-soft); color: var(--error); }
+      .banner-offline { margin: 0 0 0.9rem; border-color: var(--warn); background: var(--surface); color: var(--text); }
+      .banner-offline .btn-link { color: var(--link); }
       /* Devices / Backup views: a short stack of cards */
       .view-cards { display: flex; flex-direction: column; gap: 0.75rem; }
       .view-card {

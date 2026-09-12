@@ -208,6 +208,7 @@ priorities and ordering live in [`plan/pending.md`](../plan/pending.md).
 ### Folder semantics
 
 - ~~Trash / undelete with retention~~ — shipped in v1.2 (browser-side: the object stays 30 days, `restore` is a plain `create`, `purge` records removal; no bucket lifecycle rule needed, so it works on every provider and through the carrier).
+- ~~PWA / offline~~ — shipped in v1.2 (installable; offline open lists the last-seen folder read-only). Not built: queued offline writes.
 - **Full-text search.** Per-folder inverted index, encrypted and
   stored as `.crate/index.<uuid>.enc`. Indexing runs in a Web Worker
   on write. Search runs entirely in-browser; the bucket sees ciphertext.

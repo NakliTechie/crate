@@ -13,6 +13,12 @@ All notable changes to Crate. Format loosely follows [Keep a Changelog](https://
 - ESM API (additive): `Crate.open({ recoveryEntropy })`, `crate.setPassphrase(newPassphrase)`, `crate.enableRecovery(entropy)`, `crate.hasRecovery`.
 - `lib/vault.js`: `sealVault` / `openVault` / `rewrapVault` — the one place that knows the key slots; unlock-via-phrase (phase 5) and enable-recovery (phase 6) build on it. Tests: `test/vault.test.mjs`, `test/crate-vault.test.mjs` (bootstrap + open by either credential against an in-memory bucket, wrong credential named, legacy v1.0 still opens).
 
+### Added — install it, open it offline
+
+- **Installable** (`manifest.webmanifest`, icons) and served by a service worker (`sw.js`) that caches this origin's static files network-first with a short timeout — a deploy still propagates on the next load, a dead network still opens the app. Bucket and carrier traffic never passes through it.
+- **Offline open.** Every successful fetch of `crate.json` and the manifest is kept, sealed, in IndexedDB per bucket (`lib/offline.js`); with the network down, `Crate.open` falls back to it, the passphrase still unwraps the key, the manifest still verifies, and the folder lists as last seen with an "Offline" banner. Downloads and changes are refused until reconnect; the copy is dropped on Lock. Queued writes are not built (see `docs/prior-art.md`).
+- Fixed: **Start over** after a failed or finished setup left the previous outcome in place, so a second setup in the same tab never ran.
+
 ### Added — PDF, audio and video previews
 
 - Preview opens PDFs in the browser's own viewer (a frame over the decrypted blob), and plays audio and video with the native `<audio>` / `<video>` elements — whole-file decrypt in the tab, so the 50 MB preview cap applies; streaming decrypt over Range requests is a later step. Formats the browser can't play say so and point at Download. The shared-file page previews the same kinds. CSP gains `media-src 'self' blob:` and `frame-src blob:`.
