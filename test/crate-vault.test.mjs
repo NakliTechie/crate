@@ -19,6 +19,9 @@ globalThis.fetch = async (url, init = {}) => {
   const key = String(url);
   if (method === "PUT") {
     const body = init.body instanceof Uint8Array ? init.body : new Uint8Array(init.body);
+    const h = init.headers || {};
+    const ifMatch = h["if-match"] || h["If-Match"] || (typeof h.get === "function" ? h.get("if-match") : null);
+    if (ifMatch && store.get(key)?.etag !== ifMatch) return new Response("<Error><Code>PreconditionFailed</Code></Error>", { status: 412 });
     const etag = `"e${++n}"`;
     store.set(key, { body, etag });
     return new Response(null, { status: 200, headers: { etag } });
@@ -93,3 +96,42 @@ store.clear();
 }
 
 console.log("OK: Crate.bootstrap writes v1.1; open by passphrase or recovery phrase; wrong credential named; v1.0 vaults still open");
+
+// --- setPassphrase / enableRecovery: re-wrap, never re-encrypt ----------
+store.clear();
+{
+  const a = await Crate.bootstrap({ bucketConfig, credentials, passphrase: PASS });
+  await a.write("/keep.txt", new TextEncoder().encode("keep"));
+  const objectsBefore = [...store.keys()].filter((k) => k.includes("/objects/")).map((k) => [k, store.get(k).etag]);
+  assert.equal(a.hasRecovery, false);
+
+  // add a recovery phrase after the fact
+  await a.enableRecovery(entropy);
+  assert.equal(a.hasRecovery, true);
+  // change the passphrase; the phrase slot survives
+  await a.setPassphrase("brand-new-words-here-now");
+  a.close();
+
+  const byNew = await Crate.open({ bucketConfig, credentials, passphrase: "brand-new-words-here-now" });
+  assert.equal(new TextDecoder().decode(await byNew.read("/keep.txt")), "keep");
+  assert.equal(byNew.hasRecovery, true);
+  byNew.close();
+  await assert.rejects(Crate.open({ bucketConfig, credentials, passphrase: PASS }), /wrong passphrase/);
+  const byPhrase2 = await Crate.open({ bucketConfig, credentials, recoveryEntropy: entropy });
+  assert.equal(new TextDecoder().decode(await byPhrase2.read("/keep.txt")), "keep");
+  byPhrase2.close();
+
+  // no object body was rewritten
+  const objectsAfter = [...store.keys()].filter((k) => k.includes("/objects/")).map((k) => [k, store.get(k).etag]);
+  assert.deepEqual(objectsAfter, objectsBefore);
+
+  // a stale instance loses the If-Match race instead of clobbering
+  const stale = await Crate.open({ bucketConfig, credentials, recoveryEntropy: entropy });
+  const fresh = await Crate.open({ bucketConfig, credentials, recoveryEntropy: entropy });
+  await fresh.setPassphrase("fresh-wins-this-race");
+  await assert.rejects(stale.setPassphrase("stale-must-lose"), (e) => e instanceof CrateError && /another device/.test(e.message));
+  stale.close(); fresh.close();
+  const after = await Crate.open({ bucketConfig, credentials, passphrase: "fresh-wins-this-race" });
+  after.close();
+}
+console.log("OK: setPassphrase / enableRecovery re-wrap the key slots; objects untouched; etag tracked");
