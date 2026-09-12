@@ -102,7 +102,9 @@ The rollback anchor from the 2026-05 audit (H1) is unchanged in meaning: the obj
 {"v":1,"ts":"2026-05-21T15:02:00Z","op":"delete","path":"/notes/foo.md","uuid":"01JFX…","prev_sig":"def…","sig":"ghi…"}
 ```
 
-Five event kinds: `create`, `update`, `delete`, `move`, `mkdir`. Materialising the manifest means folding the event stream into a final `Map<path, entry>` — last write wins per path; `move` rewrites the path; `delete` removes; `mkdir` records empty folders.
+Six event kinds: `create`, `update`, `delete`, `move`, `mkdir`, and since v1.2 `purge`. Materialising the manifest means folding the event stream into a final `Map<path, entry>` — last write wins per path; `move` rewrites the path; `delete` removes; `mkdir` records empty folders; `purge` is invisible to the tree.
+
+**Trash.** The folder UI's Delete appends the `delete` event but leaves `objects/{uuid}` in the bucket for 30 days. Folding the *deleted* side of the same stream (`materialiseTrash`) lists those files with the keys needed to read them; **Restore** is a plain `create` with the same uuid and keys under the old path (or `name (restored).ext`), so every reader — the daemon included — understands it without knowing about trash. **Delete forever**, **Empty trash** and the 30-day sweep (run by whichever browser opens the folder) delete the object and append `purge {uuid}`, which readers that predate it ignore. A daemon-side delete still removes bytes at once; restoring such a file from the browser reports that its data is gone and purges the entry. `Crate.remove()` in the ESM API deletes the object immediately, as before.
 
 ### The prev_sig chain
 

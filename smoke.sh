@@ -273,7 +273,7 @@ for id in shell-search shell-help shell-menu-btn side-stats; do
     echo "FAIL: index.html missing shell element #$id"; exit 1
   fi
 done
-for view in all recent photos devices backup; do
+for view in all recent photos trash devices backup; do
   if ! grep -q "data-view=\"$view\"" index.html; then
     echo "FAIL: index.html sidebar missing view '$view'"; exit 1
   fi
@@ -358,5 +358,6 @@ node --no-warnings test/carrier-transport.test.mjs
 node --no-warnings test/passphrase.test.mjs
 node --no-warnings test/vault.test.mjs
 node --no-warnings test/crate-vault.test.mjs
+node --no-warnings test/trash.test.mjs
 
 echo "OK: crate v1"

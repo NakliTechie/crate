@@ -60,7 +60,7 @@ DCS) are covered as [cousins](#cousins) below.
 | Drag-drop upload | Yes | Yes (OS drag) | No | No | Yes (OS drag) | Yes |
 | Bulk export | Yes — zip / FSA stream | OS copy | restic restore | kopia restore | OS copy | Yes |
 | Rename / move | Yes (atomic via manifest) | Yes (OS-level) | N/A (snapshots immutable) | N/A | Yes (POSIX) | Yes |
-| Trash / undelete | No (history only) | OS trash | Snapshots are immutable history | Snapshots are immutable history | OS trash | Yes — rubbish bin |
+| Trash / undelete | **Yes** — 30-day trash, restore, purge (v1.2) | OS trash | Snapshots are immutable history | Snapshots are immutable history | OS trash | Yes — rubbish bin |
 
 ## Encryption
 
@@ -207,14 +207,7 @@ priorities and ordering live in [`plan/pending.md`](../plan/pending.md).
 
 ### Folder semantics
 
-- **Trash / undelete with retention.** A `delete` manifest event
-  tags the `objects/{uuid}` blob with an expiry timestamp; a
-  bucket-side lifecycle rule (R2 / S3 / B2 / Hetzner all support
-  this natively) sweeps tagged objects after N days. A `restore`
-  manifest event before expiry brings the file back; after expiry
-  it's gone. No custom janitor needed — the bucket cleans itself
-  even when no daemon is running. Lifecycle-as-trash-primitive is
-  borrowed from [SeaweedFS](#cousins).
+- ~~Trash / undelete with retention~~ — shipped in v1.2 (browser-side: the object stays 30 days, `restore` is a plain `create`, `purge` records removal; no bucket lifecycle rule needed, so it works on every provider and through the carrier).
 - **Full-text search.** Per-folder inverted index, encrypted and
   stored as `.crate/index.<uuid>.enc`. Indexing runs in a Web Worker
   on write. Search runs entirely in-browser; the bucket sees ciphertext.

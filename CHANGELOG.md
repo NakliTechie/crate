@@ -13,6 +13,10 @@ All notable changes to Crate. Format loosely follows [Keep a Changelog](https://
 - ESM API (additive): `Crate.open({ recoveryEntropy })`, `crate.setPassphrase(newPassphrase)`, `crate.enableRecovery(entropy)`, `crate.hasRecovery`.
 - `lib/vault.js`: `sealVault` / `openVault` / `rewrapVault` — the one place that knows the key slots; unlock-via-phrase (phase 5) and enable-recovery (phase 6) build on it. Tests: `test/vault.test.mjs`, `test/crate-vault.test.mjs` (bootstrap + open by either credential against an in-memory bucket, wrong credential named, legacy v1.0 still opens).
 
+### Added — Trash
+
+- **Delete moves to Trash.** The object stays in your storage for 30 days; the **Trash** view (sidebar, with a count) lists deleted files with where they were and when, and offers **Restore** (back to the old path, or `name (restored).ext` if taken), **Delete forever**, and **Empty trash**. Expired items are purged by whichever browser opens the folder. Restore is a plain `create` with the same uuid, so the daemon and older readers see the same tree; removal is recorded by a new `purge` event that older readers ignore. A file deleted from the daemon side has its bytes removed at once — restoring it from the browser says so. `Crate.remove()` (ESM) still deletes immediately. Tests: `test/trash.test.mjs`.
+
 ### Added — multi-select
 
 - Tick files (the icon cell becomes a checkbox on hover; shift-click selects a range; **Select all**; Escape clears) and act on the lot: **Download** (a zip through the export path, streamed to disk when the browser can), **Move to…** (a typed destination, existing folders listed, created if new; name clashes refused before anything moves), **Delete** (one confirmation naming the files). Folders stay single-action for now.

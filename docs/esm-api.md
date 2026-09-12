@@ -102,7 +102,9 @@ re-encrypted + PUT to the bucket after the operation.
 ### `crate.remove(path)`
 
 DELETEs the underlying `objects/{uuid}` and appends a `delete` event.
-Idempotent: removing an already-absent path is a no-op.
+Idempotent: removing an already-absent path is a no-op. (The folder UI's
+Delete is softer: it appends the event and keeps the object for 30 days
+so the file can be restored from Trash — see encryption-model.md.)
 
 ### `crate.move(from, to)`
 
