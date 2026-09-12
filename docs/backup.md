@@ -30,6 +30,53 @@ rclone sync r2:my-crate-primary r2:my-crate-backup
 
 Good for: an offsite copy where you don't trust any other machine to ever hold the plaintext. The mirror bucket's owner (Cloudflare, in the R2→R2 case) sees the same ciphertext + access patterns as the primary.
 
+#### Continuous one-way replication (runbook)
+
+A one-off `rclone sync` is a snapshot. For a standby that keeps up, run it on a schedule — **one way, primary → standby**, never two-way (`rclone bisync` resolves conflicts by picking a side, which on encrypted blobs can silently resurrect a deleted object or roll a manifest back; the manifest's rollback anchor will then refuse the bucket).
+
+1. **Configure two remotes** (an R2 example; Hetzner / B2 / S3 differ only in endpoint):
+
+   ```sh
+   rclone config create r2 s3 provider=Cloudflare \
+     access_key_id=… secret_access_key=… \
+     endpoint=https://<account-id>.r2.cloudflarestorage.com acl=private
+   rclone config create r2-standby s3 provider=Cloudflare \
+     access_key_id=… secret_access_key=… \
+     endpoint=https://<other-account-or-same>.r2.cloudflarestorage.com acl=private
+   ```
+
+   Use a **read-only token** for the primary and a write token scoped to the standby bucket. The primary's Crate token stays out of the replication host entirely.
+
+2. **The job**, `~/bin/crate-replicate.sh`:
+
+   ```sh
+   #!/bin/sh
+   set -eu
+   LOG=/var/log/crate-replicate.log
+   # --update: never overwrite a newer standby object with an older one
+   # --checksum: compare by ETag, not mtime (R2 mtimes are upload times)
+   # --transfers 8: 8 MiB chunks upload in parallel; raise on fat pipes
+   rclone sync r2:my-crate-primary r2-standby:my-crate-standby \
+     --update --checksum --transfers 8 --fast-list \
+     --log-file "$LOG" --log-level NOTICE --stats 0
+   ```
+
+   Sync the **manifest last** if you want a consistent point-in-time copy under heavy writes: `rclone sync … --exclude ".crate/**"` then `rclone copy r2:my-crate-primary/.crate r2-standby:my-crate-standby/.crate`. Objects are content-addressed by UUID and never rewritten in place (a changed file gets a new upload under the same UUID with a new ETag; `--update --checksum` handles that), so the manifest is the only thing whose ordering matters.
+
+3. **Schedule it** — every 15 minutes is plenty; the folder's own sync interval is ~15 s, but a standby is for disasters, not for reads:
+
+   ```
+   */15 * * * * /home/you/bin/crate-replicate.sh || logger -t crate-replicate "FAILED rc=$?"
+   ```
+
+   On macOS use a `launchd` plist with `StartInterval` 900; on a NAS, the vendor's scheduler.
+
+4. **Monitor the exit code, not the log.** `rclone` exits 0 on a clean run, 1–9 on any error (5 = temporary, 6 = no retries left, 7 = fatal). Wire the non-zero branch to whatever pings you — `ntfy`, healthchecks.io's dead-man's switch (`curl https://hc-ping.com/<uuid>` on success, nothing on failure), or mail. A job that silently stops is the one failure mode a standby cannot survive.
+
+5. **Test the restore once a quarter**: open [crate.naklios.dev](https://crate.naklios.dev) → **Use a bucket you already have** with the standby's *read* credentials and your passphrase. The folder should open and a recent file should preview. If the manifest is refused by the rollback anchor (a standby lagging behind the primary this device last saw), that is the anchor working — clear it only for a real restore.
+
+What replication does **not** protect: a wrong delete replicates within 15 minutes. Keep object versioning (below) on the standby, or a longer `--backup-dir`, for that.
+
 ### 3. Turn on R2 object versioning
 
 In the Cloudflare R2 dashboard → your bucket → Settings → Object Versioning → Enable. Every overwrite + delete now keeps the prior version. You can roll back individual objects through the dashboard or `rclone`.
