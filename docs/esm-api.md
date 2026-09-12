@@ -38,25 +38,46 @@ will rarely call it directly.
 
 ## Methods — full reference
 
-### `Crate.open({ bucketConfig, credentials, passphrase })`
+### `Crate.open({ bucketConfig, credentials, passphrase } | { bucketConfig, credentials, recoveryEntropy })`
 
-Opens an existing Crate folder. Reads `.crate/crate.json` for the salt,
-derives the master key via PBKDF2-SHA256 (600 000 iterations), reads +
-decrypts the manifest, and returns a `Crate` instance ready for I/O.
+Opens an existing Crate folder. Reads `.crate/crate.json` and recovers
+the content key from the slot the caller holds: the passphrase (a v1.0
+vault derives the key with PBKDF2-SHA256, 600 000 iterations; a v1.1
+vault unwraps it), or — v1.1 only — `recoveryEntropy`, the 32 bytes a
+24-word recovery phrase encodes (`lib/recovery.js::mnemonicToEntropy`).
+Then reads + decrypts the manifest and returns a `Crate` ready for I/O.
 
 **Throws** `CrateError` on:
 - bucket missing or unreachable
 - credentials reject (HTTP 403 from R2)
 - `.crate/crate.json` absent (use `Crate.bootstrap` for first-time setup)
-- manifest decrypt fails (wrong passphrase or tampered ciphertext)
+- wrong passphrase / wrong recovery phrase (the message names which)
+- `recoveryEntropy` given for a vault with no recovery slot
+- manifest decrypt or signature check fails (tampered ciphertext)
 
-### `Crate.bootstrap({ bucketConfig, credentials, passphrase, identity?, createdBy? })`
+### `Crate.bootstrap({ bucketConfig, credentials, passphrase, recoveryEntropy?, identity?, createdBy? })`
 
-Initialises a fresh Crate. Writes `.crate/crate.json` (with a fresh
-16-byte salt) and an empty signed-JSONL manifest, then returns an open
-instance. If the bucket already had a `.crate/crate.json`, calling
-`bootstrap` OVERWRITES it; existing manifest events become unreadable.
-Use with care.
+Initialises a fresh Crate as a **v1.1 vault**: mints a random content
+key, writes `.crate/crate.json` with a `passphrase_wrap` and — when
+`recoveryEntropy` is given — a `recovery_wrap`, plus an empty
+signed-JSONL manifest, then returns an open instance. If the bucket
+already had a `.crate/crate.json`, calling `bootstrap` OVERWRITES it;
+existing manifest events become unreadable. Use with care.
+
+### `crate.setPassphrase(newPassphrase)` — v1.1
+
+Re-wraps the content key under a new passphrase and writes
+`.crate/crate.json` with `If-Match` on the copy this instance read. The
+recovery slot, if any, is carried over; no object or manifest byte
+changes. Throws `CrateError` mentioning "another device" on a 412.
+
+### `crate.enableRecovery(recoveryEntropy, { passphrase? })` — v1.1
+
+Adds or replaces the recovery slot (same conditional write). A v1.0
+vault is migrated to v1.1 in the same write and needs the current
+`passphrase` for its passphrase slot; the key is unchanged (see
+[encryption-model.md](encryption-model.md#the-content-key-v11--and-the-master-key-v10)
+for the trade-off). `crate.hasRecovery` reports the slot's presence.
 
 ### `crate.list(path = "/")` → `Array<Entry>`
 
@@ -155,6 +176,6 @@ Run from any origin the bucket's CORS allows (or, for a carrier folder, any orig
 
 ## Versioning
 
-The 9-method surface above is the v1 contract. Adding a method bumps the minor version (no breaking change). Removing or changing a method signature bumps the major version and breaks downstream consumers.
+The 9-method surface above is the v1 contract; v1.1 added `setPassphrase`, `enableRecovery`, `hasRecovery` and the `recoveryEntropy` open path (additive — minor bump). Adding a method bumps the minor version (no breaking change). Removing or changing a method signature bumps the major version and breaks downstream consumers.
 
-The encryption format version is `v: 1` (carried in `.crate/crate.json` and every manifest event). A `v: 2` upgrade requires a migration path from v1 (read-old + write-new on next open) and coordinated browser+daemon releases. The daemon tolerates higher `v` on read (forward-compat) but only writes the version it was built for.
+The encryption format version is `v: 1` (carried in `.crate/crate.json` and every manifest event); `crate.json` additionally carries a schema `version` of `"1.0"` (salt + derived key) or `"1.1"` (wrapped content key, optional recovery slot), both readable by browser and daemon. A `v: 2` upgrade requires a migration path from v1 (read-old + write-new on next open) and coordinated browser+daemon releases. The daemon tolerates higher `v` on read (forward-compat) but only writes the version it was built for.

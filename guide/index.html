@@ -396,7 +396,7 @@
         <li><strong>The bucket is yours.</strong> You pay Cloudflare directly (free tier covers most users — 10 GB storage, 1 M writes, 10 M reads per month). You can leave Crate at any time; your files stay in your bucket.</li>
         <li><strong>The encryption is in this browser tab.</strong> The bucket owner sees only ciphertext and access patterns. We can prove that — the entire encryption layer is one file: <a href="https://github.com/NakliTechie/crate/blob/main/lib/crypto.js"><code>lib/crypto.js</code></a>.</li>
         <li><strong>No account with us.</strong> There's nothing on a NakliTechie server. The whole app is static HTML; you could host it yourself off any static server tomorrow if our deployment vanished.</li>
-        <li><strong>One credential.</strong> Your passphrase is the only thing standing between an attacker with bucket access and your files. No recovery email, no support backdoor. That's the trade-off.</li>
+        <li><strong>Two credentials you hold, none we do.</strong> Your passphrase, and a 24-word recovery phrase for the day you lose it. No recovery email, no support backdoor. That's the trade-off.</li>
       </ul>
     </section>
 
@@ -612,6 +612,9 @@
         The wizard shows you <strong>five random words</strong>, numbered, and the passphrase they make when joined with hyphens — <code>sphere-cancel-scan-blanket-interest</code>. Write that line down exactly — on paper or in your password manager — tick <em>I've saved the hyphenated passphrase</em>, and click <strong>Next</strong>. (Crate's own unlock screen also accepts the words with spaces; the desktop daemon wants the hyphens.) That's your passphrase: about 55 bits of strength, roughly 60,000 years for one GPU to exhaust, and words are far easier to copy correctly than symbols. <strong>Different words</strong> deals a new set. The words come from the public 2048-word BIP-39 list, shipped inside the page; the strength is in the random choice, not the list.
       </p>
       <p>
+        Next comes your <strong>recovery phrase</strong>: 24 words, shown once. If you ever lose the passphrase, these open the folder and let you set a new one. Write them on paper, in order, then type three of them back to continue — or <strong>Skip for now</strong> and set one up later from <strong>Backup</strong>. Don't screenshot the phrase; don't email it to yourself.
+      </p>
+      <p>
         Prefer to choose your own? Click <em>I'd rather choose my own passphrase</em>. You'll type it twice; the strength bar (<a href="https://github.com/zxcvbn-ts/zxcvbn">zxcvbn</a>) turns green at the recommended 55 bits — five unrelated words, or twelve random mixed characters. Below that, the page tells you how long one GPU would need to crack it and lets you accept the trade-off with a tick; only the trivial (under 20 bits — a single word, a birthday) is refused outright.
       </p>
 
@@ -734,7 +737,7 @@
         <li><strong>Recent</strong> — the 50 most recently added or changed files from anywhere in the tree, newest first, each with the folder it lives in.</li>
         <li><strong>Photos</strong> — every image in the tree (by type or extension), with a count next to the label. A list, not thumbnails: showing thumbnails would mean decrypting every image on open.</li>
         <li><strong>Devices</strong> — this browser, plus <strong>Pair an agent</strong> for the desktop daemon. See <a href="#daemon">section 7</a>.</li>
-        <li><strong>Backup</strong> — <strong>Download credentials file</strong> (re-emit the encrypted <code>.crate-creds</code> at any time), <strong>Export everything</strong> (a zip, or a stream to a folder on disk for large collections), and the passphrase reminder.</li>
+        <li><strong>Backup</strong> — <strong>Set up a recovery phrase</strong> (if you skipped it at setup), <strong>Change passphrase</strong>, <strong>Download credentials file</strong> (re-emit the encrypted <code>.crate-creds</code> at any time), and <strong>Export everything</strong> (a zip, or a stream to a folder on disk for large collections).</li>
       </ul>
 
       <h3>The toolbar</h3>
@@ -875,17 +878,17 @@
       <h3>Three disaster scenarios</h3>
 
       <div class="two-col">
-        <div class="col bad-col">
-          <h4>You lost the passphrase + the creds file</h4>
+        <div class="col ok-col">
+          <h4>You lost the passphrase, but have the recovery phrase</h4>
           <p style="margin:0; color: var(--muted); font-size:0.92rem;">
-            Files are gone. There is no reset, no support email, no recovery flow.
-            Plan ahead: write the passphrase down, store the creds file somewhere safe.
+            Open Crate → <strong>Already set up? Open your folder</strong> → <strong>Lost your passphrase? Use your recovery phrase</strong>. Enter your connection details (the creds file can't help — it's sealed under the lost passphrase), paste the 24 words, and pick a new passphrase. Nothing in the folder is touched.
           </p>
         </div>
-        <div class="col ok-col">
-          <h4>You lost the passphrase, but have the creds file</h4>
+        <div class="col bad-col">
+          <h4>You lost the passphrase and the recovery phrase</h4>
           <p style="margin:0; color: var(--muted); font-size:0.92rem;">
-            Still gone — the file is encrypted with the passphrase. Same outcome as above.
+            Files are gone, with or without the creds file — there is no reset, no support email, no backdoor.
+            Plan ahead: the recovery phrase on paper, the passphrase in a password manager.
           </p>
         </div>
       </div>

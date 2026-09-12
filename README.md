@@ -14,10 +14,10 @@ About a minute. You need a free [Cloudflare](https://dash.cloudflare.com/sign-up
 
 1. Open [`crate.naklios.dev`](https://crate.naklios.dev) → **Get started**. Crate shows a secret it generated for you.
 2. **Deploy to Cloudflare** copies the tiny [`crate-carrier`](https://github.com/NakliTechie/crate-carrier) Worker into your GitHub, creates an R2 bucket for it, and asks for `CARRIER_SECRET` — paste the secret. The build takes about a minute; reload its page to see the result.
-3. **Visit → Continue to Crate**, then **Verify**, then **Next** for your passphrase: five random words joined with hyphens (`sphere-cancel-scan-blanket-interest`). Write that line down.
+3. **Visit → Continue to Crate**, then **Verify**, then **Next** for your passphrase: five random words joined with hyphens (`sphere-cancel-scan-blanket-interest`). Write that line down. Next comes a 24-word **recovery phrase** — write it on paper too (or skip and set it up later from **Backup**).
 4. **Done** → download the `.crate-creds` file → **Open your folder**. Drop a file in.
 
-**What you keep:** the `.crate-creds` file and the passphrase — both are needed to open the folder anywhere else (**Already set up? Open your folder**), either alone is useless, and nobody can reset the passphrase. Lost the file? Enter the Worker URL and carrier secret by hand. Lost the passphrase? The files are gone.
+**What you keep:** the `.crate-creds` file, the passphrase, and the 24-word **recovery phrase** on paper. File + passphrase open the folder anywhere (**Already set up? Open your folder**); either alone is useless. Lost the file? Enter the Worker URL and carrier secret by hand. Lost the passphrase? The recovery phrase opens the folder and lets you set a new one. Lost both? The files are gone — nobody can reset them.
 
 Already run your own bucket and API token? **Use a bucket you already have** (under the card) is the four-step manual route — Cloudflare R2, Hetzner, Backblaze B2 or AWS S3 through the same sig-v4 client.
 
@@ -26,7 +26,7 @@ Already run your own bucket and API token? **Use a bucket you already have** (un
 ## What it is
 
 - **A file manager from the first second.** Sidebar (All files · Recent · Photos · Devices · Backup), search, Upload + New folder; setup is a card inside the same frame. Rename, drag-drop, text/image preview, per-file history. Keyboard-navigable, phone-sized, light or dark with your system.
-- **Encrypted in the tab.** AES-256-GCM in 8 MiB chunks with per-file data keys, wrapped by a PBKDF2 master key (600 000 iterations); an HMAC-SHA256 signed, rollback-anchored manifest that fails closed. [`docs/encryption-model.md`](docs/encryption-model.md).
+- **Encrypted in the tab.** AES-256-GCM in 8 MiB chunks with per-file data keys under a random content key, which your passphrase or your recovery phrase unwraps (PBKDF2, 600 000 iterations); an HMAC-SHA256 signed, rollback-anchored manifest that fails closed. [`docs/encryption-model.md`](docs/encryption-model.md).
 - **Your storage.** The carrier Worker holds only an R2 binding and sees ciphertext; delete it and access ends. Or bring your own bucket — we never see your credentials.
 - **Same folder everywhere.** Same URL on your phone (~15 s sync). **Backup → Export everything** zips the lot (streams to disk when large). [`docs/backup.md`](docs/backup.md).
 - **Optional desktop daemon** — [`crate-agent`](https://github.com/NakliTechie/crate-agent) mirrors the folder to plaintext `~/crate/` on macOS / Linux. Pair it from **Devices**.
@@ -40,7 +40,8 @@ The credentials file is the default path; there's a fallback if you lost it:
 |---|---|
 | Creds file + passphrase | Drop file + type passphrase (default) |
 | Passphrase + your details (one-click: Worker URL + carrier secret; own bucket: the 4 bucket strings) | "No file? Enter the details manually." |
-| Nothing | Can't recover — v1 has no recovery credential. Back up first. |
+| Recovery phrase + your details | "Lost your passphrase? Use your recovery phrase." — then set a new passphrase |
+| Nothing | Can't recover. Keep the phrase on paper; back up. |
 
 Skipped the download? **Backup → Download credentials file** re-emits it any time.
 

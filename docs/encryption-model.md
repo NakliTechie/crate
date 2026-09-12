@@ -25,22 +25,29 @@ your-bucket/
 
 ## Key hierarchy
 
-There are three keys in play, derived in a chain:
+Three keys in play. Since v1.1 the top of the chain is a *slot*, not a derivation:
 
 ```
-passphrase  ──[ PBKDF2-SHA256(salt, 600 000 iter, 32 bytes) ]──>  master key
-master key  ──[ AES-256-GCM wrap, per-file random data key  ]──>  data key (one per file)
-data key    ──[ AES-256-GCM encrypt(plaintext, IV, AAD=UUID)]──>  ciphertext blob
+passphrase       ──[ PBKDF2-SHA256(salt_p, 600 000 iter) ]──>  passphrase-KEK ─┐
+recovery phrase  ──[ BIP-39 → 32 bytes → PBKDF2(salt_r)   ]──>  recovery-KEK   ─┤ AES-256-GCM unwrap
+                                                                                └──>  content key ("master key", 32 random bytes)
+content key  ──[ AES-256-GCM wrap, per-file random data key  ]──>  data key (one per file)
+data key     ──[ AES-256-GCM encrypt(chunk, IV, AAD)        ]──>  ciphertext chunks
 ```
 
-### The master key
+### The content key (v1.1) — and the master key (v1.0)
 
-- **Algorithm**: PBKDF2-SHA256, 600 000 iterations, 32-byte output.
-- **Salt**: 16 random bytes from `crypto.getRandomValues`, stored in `.crate/crate.json` at bucket-setup time and never changed.
-- **Lives only in your browser tab's memory.** Never written to disk, never sent over the network, never put into IndexedDB or sessionStorage. `Crate.close()` zeros it via `crypto.subtle`'s internal handling (we deliberately don't keep our own copy).
-- **600k iterations** matches the OWASP 2023 recommendation for PBKDF2-SHA256. About 1 second on a modern phone, 200 ms on a desktop — annoying enough to slow brute-force, fast enough you don't notice.
+- **v1.1 vaults** (every folder created since v1.1.0): the content key is 32 random bytes from `crypto.getRandomValues`, never derived from anything. `.crate/crate.json` stores it wrapped (AES-256-GCM, no AAD, 48 bytes) under one or two key-encryption keys:
+  - `passphrase_wrap` — KEK = PBKDF2-SHA256(passphrase, 16-byte salt, 600 000 iterations). Always present.
+  - `recovery_wrap` — KEK = PBKDF2-SHA256(entropy, its own salt), where `entropy` is the 32 bytes a 24-word BIP-39 phrase encodes (`lib/recovery.js`; the checksum catches a mistyped word). Present when the user kept a phrase at setup or set one up later from **Backup**.
 
-The master key never directly encrypts file content. It only wraps per-file data keys.
+  Either slot alone recovers the content key. That is what makes a lost passphrase survivable, and what makes **changing the passphrase a re-wrap, not a re-encrypt**: a new `passphrase_wrap` is written, every file and the manifest stay as they are. `lib/vault.js` is the only code that reads or writes the slots; `.crate/crate.json` is written with `If-Match` so two devices changing credentials at once cannot clobber each other.
+- **v1.0 vaults** (created before v1.1.0): master key = PBKDF2-SHA256(passphrase, salt, 600 000 iterations), salt stored in `crate.json`. No recovery slot. They open exactly as before.
+- **Migrating a v1.0 vault** happens the first time its owner sets up a recovery phrase or changes the passphrase from **Backup**: the existing PBKDF2-derived key *becomes* the content key and is wrapped into slots. Nothing in the bucket is re-encrypted and a paired daemon keeps its key. The trade-off, stated plainly: for a migrated vault, changing the passphrase later does not revoke someone who holds the **old passphrase and an old copy of `crate.json`** — they can still derive the key. New v1.1 vaults do not have this property (the content key is random). A full re-key (fresh content key, every data key re-wrapped, manifest re-signed) is a separate, heavier operation not yet shipped.
+- **Lives only in your browser tab's memory.** Never written to disk, never sent over the network, never put into IndexedDB or sessionStorage. `Crate.close()` zeros it.
+- **600k iterations** matches the OWASP 2023 recommendation for PBKDF2-SHA256. About 1 second on a modern phone, 200 ms on a desktop — annoying enough to slow brute-force, fast enough you don't notice. The recovery KEK uses the same cost; its input is 256 random bits, so the KDF is belt-and-braces there, not the strength.
+
+The content key never directly encrypts file content. It only wraps per-file data keys.
 
 ### Per-file data keys
 
@@ -124,13 +131,15 @@ Two surfaces (browser tab + daemon, or two browser tabs) can race on manifest wr
 
 The browser side is `_flushManifest()` in `lib/crate.js`; the daemon side is `putManifest()` in `internal/syncer/syncer.go`. Same algorithm, symmetric.
 
-## No recovery credential
+## Recovery phrase
 
-v1 has only one credential: your passphrase. There is no recovery phrase, no email-reset, no support backdoor. If you lose the passphrase, the bucket's contents are unrecoverable random bytes — by design.
+Since v1.1.0 a folder can have two credentials: the passphrase and a 24-word recovery phrase. The phrase is the second slot described above — the same content key, wrapped under a key derived from the phrase's 256 bits of entropy. It is shown once (at setup, or from **Backup → Set up a recovery phrase**), confirmed by typing three words back, and never stored by Crate anywhere.
 
-That's the privacy guarantee cutting both ways. The cryptographic property that prevents Cloudflare from reading your files also prevents Crate (or anyone) from helping you recover them. Use a password manager. Write the passphrase on paper. Pick something memorable.
+**Lost the passphrase:** on the unlock screen choose **Lost your passphrase? Use your recovery phrase**, enter the connection details (the credentials file is sealed under the passphrase that was lost, so it cannot help here), paste the 24 words, and Crate opens the folder and asks for a new passphrase before showing anything. The new passphrase replaces the old slot for every device; the recovery slot is carried over.
 
-A future "Forgot passphrase? Use recovery phrase" flow would require a second credential bound to the same encryption — that's a v2 design decision (the schema would need an additional key-wrap slot in `.crate/crate.json`). v1 doesn't ship it.
+**Lost both:** the bucket's contents are unrecoverable random bytes — by design. That is the privacy guarantee cutting both ways: the property that prevents Cloudflare from reading your files also prevents Crate (or anyone) from helping you. Write the phrase on paper.
+
+**Replacing the phrase** writes a new `recovery_wrap`; the old words stop working. **Skipping it at setup** leaves a passphrase-only v1.1 vault; enabling later is one conditional write.
 
 ## Two carriers, one threat model
 

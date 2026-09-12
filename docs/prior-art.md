@@ -81,10 +81,10 @@ DCS) are covered as [cousins](#cousins) below.
 | Feature | Crate | Cryptomator | Restic | Kopia | JuiceFS | MEGA |
 |---|---|---|---|---|---|---|
 | Passphrase + creds-file unlock | Yes (2-click) | No (vault path + passphrase) | passphrase only | passphrase only | N/A | email + password |
-| Recovery code / paper key | No (lost = lost) | **Yes** (paper recovery key in Hub) | No | No | N/A | **Yes** (master key export) |
+| Recovery code / paper key | **Yes** (24-word phrase, second key slot; v1.1) | **Yes** (paper recovery key in Hub) | No | No | N/A | **Yes** (master key export) |
 | Hardware key (WebAuthn / Passkey) | No | YubiKey via desktop | No | No | N/A | TOTP 2FA only |
 | Multi-factor / Shamir split | No | No | No | No | N/A | No |
-| Account-reset path | None — by design | Hub: admin reset | None | None | N/A | Limited (account recovery, not encryption) |
+| Account-reset path | Recovery phrase → new passphrase; no third party | Hub: admin reset | None | None | N/A | Limited (account recovery, not encryption) |
 
 ## Sync & collaboration
 
@@ -195,12 +195,7 @@ priorities and ordering live in [`plan/pending.md`](../plan/pending.md).
 
 ### Recovery & access
 
-- **Recovery credential.** A second key-wrap slot in `.crate/crate.json`
-  so a recovery phrase (or a downloaded recovery file) can unlock the
-  master key independently of the passphrase. Closes the "lost
-  passphrase = lost forever" gap that Cryptomator (paper key) and MEGA
-  (master key export) already cover. Schema bump documented in
-  [encryption-model.md](encryption-model.md#no-recovery-credential).
+- ~~Recovery credential~~ — shipped in v1.1.0 (see the table above and [encryption-model.md § Recovery phrase](encryption-model.md#recovery-phrase)).
 - **WebAuthn / Passkey unlock.** Treat the passkey as a second
   key-wrap factor — passkey signs a challenge, signature derives a wrap
   key, master key unwraps. Hardware-key-grade unlock, no install. Goes

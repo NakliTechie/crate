@@ -34,7 +34,7 @@ Good for: an offsite copy where you don't trust any other machine to ever hold t
 
 In the Cloudflare R2 dashboard → your bucket → Settings → Object Versioning → Enable. Every overwrite + delete now keeps the prior version. You can roll back individual objects through the dashboard or `rclone`.
 
-Useful for: point-in-time recovery from accidental deletes or ransomware that re-encrypted your bucket. Doesn't protect against losing the bucket itself or losing the passphrase.
+Useful for: point-in-time recovery from accidental deletes or ransomware that re-encrypted your bucket. Doesn't protect against losing the bucket itself, or losing both the passphrase and the recovery phrase.
 
 ### 4. Export the folder from the browser
 
@@ -46,9 +46,11 @@ Useful for: a one-shot "I want to know I can get my data out of here." Less usef
 
 ### "I lost my passphrase"
 
-Your files are gone. There is no reset, no support email, no recovery flow — v1 has only one credential (the passphrase). The same property that keeps Cloudflare from reading your files keeps anyone — including us — from helping you recover them.
+If you kept the **24-word recovery phrase** (shown at setup, or set up later from **Backup**): open Crate, choose **Already set up → Lost your passphrase? Use your recovery phrase**, enter your connection details and the 24 words, and pick a new passphrase. Nothing in the folder is touched. Details: [encryption-model.md § Recovery phrase](encryption-model.md#recovery-phrase).
 
-This is why redundancy matters: pick at least one of the four options above before you have data you can't afford to lose.
+If you have neither the passphrase nor the phrase, your files are gone. There is no reset, no support email, no backdoor. The same property that keeps Cloudflare from reading your files keeps anyone — including us — from helping you recover them.
+
+This is why redundancy matters: keep the phrase on paper, and pick at least one of the four options above before you have data you can't afford to lose.
 
 ### "I lost my bucket / my Cloudflare account"
 
