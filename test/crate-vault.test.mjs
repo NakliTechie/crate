@@ -67,7 +67,7 @@ byPhrase.close();
 // wrong passphrase / wrong phrase → CrateError naming the credential
 await assert.rejects(Crate.open({ bucketConfig, credentials, passphrase: "sphere-cancel-scan-blanket-wrong" }), (e) => e instanceof CrateError && /wrong passphrase/.test(e.message));
 await assert.rejects(Crate.open({ bucketConfig, credentials, recoveryEntropy: cryptoLib.randomBytes(32) }), (e) => e instanceof CrateError && /wrong recovery phrase/.test(e.message));
-await assert.rejects(Crate.open({ bucketConfig, credentials }), (e) => e instanceof CrateError && /passphrase or recoveryEntropy/.test(e.message));
+await assert.rejects(Crate.open({ bucketConfig, credentials }), (e) => e instanceof CrateError && /passphrase, recoveryEntropy or contentKey/.test(e.message));
 
 // bootstrap without a phrase → passphrase-only v1.1; phrase unlock says so (not "wrong")
 store.clear();

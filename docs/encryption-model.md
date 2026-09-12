@@ -133,6 +133,10 @@ Two surfaces (browser tab + daemon, or two browser tabs) can race on manifest wr
 
 The browser side is `_flushManifest()` in `lib/crate.js`; the daemon side is `putManifest()` in `internal/syncer/syncer.go`. Same algorithm, symmetric.
 
+## Passkey unlock (device-local)
+
+A passkey enrolled from **Backup** must support the WebAuthn **PRF** extension. Every assertion then yields a 32-byte secret bound to that credential and a salt Crate stores with the record; HKDF-SHA256 turns it into a KEK, and the KEK seals `{ connection details, content key }` with AES-256-GCM in this origin's IndexedDB. `crate.json` is untouched — the passkey is not a slot of the folder, it is a shortcut of the device. Unlocking asserts the passkey, decrypts the record, and opens the folder with the content key directly; the manifest's authentication tag is what proves the key. The record is re-sealed after a re-key, and dropped if that fails.
+
 ## Re-keying
 
 **Backup → Re-key folder** mints a fresh content key, re-wraps every per-file data key under it (unwrap with the old, wrap with the new; AAD unchanged), re-signs the whole manifest under it and appends `{"op":"rekey","generation":n+1}`, then rewrites `crate.json` with a `passphrase_wrap` under the new key. Object bodies are never touched. Write order is manifest → key file, both `If-Match`; a failed key-file write puts the old manifest back.
