@@ -143,6 +143,12 @@ Since v1.1.0 a folder can have two credentials: the passphrase and a 24-word rec
 
 **Replacing the phrase** writes a new `recovery_wrap`; the old words stop working. **Skipping it at setup** leaves a passphrase-only v1.1 vault; enabling later is one conditional write.
 
+## Share links
+
+`https://crate.naklios.dev/#share=<payload>` — the fragment is never sent in an HTTP request. The payload holds (a) a presigned `GET` for `objects/{uuid}` that the storage honours until `exp` — sig-v4 query-string auth on S3-compatible buckets (`X-Amz-Expires` ≤ 7 days, `UNSIGNED-PAYLOAD`, `host` the only signed header) or the carrier's `?share=1&exp=<ms>&sig=HMAC(secret, "SHARE\npath\nexp")`; (b) the file's per-file data key, unwrapped by the owner's tab; (c) the manifest-signed `content_iv`, `chunk_size`, `size`, `uuid` — so the recipient runs the same `openObject` check the owner does, and a replaced object fails to open rather than opening wrong.
+
+What the link grants: that one file's bytes, until `exp`; the data key stays known to the holder, so a *rewritten* file is readable through a fresh URL by someone who kept the key — rotate the storage credential (every presigned URL and every carrier signature dies) or **Delete forever** to end that. What it never grants: the master key, the manifest, any other object. Links live in browser history like any URL; the dialog says so.
+
 ## Two carriers, one threat model
 
 Crate reaches the bucket one of two ways, chosen per folder and recorded in the credentials file's `provider`:

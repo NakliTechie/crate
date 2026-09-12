@@ -754,6 +754,7 @@
       <ul>
         <li><strong>Preview</strong> — open text or image files inline without downloading. Files larger than 50 MB show a "too large to preview, use Download" message.</li>
         <li><strong>Download</strong> — decrypt + save to your Downloads folder. Large files stream straight to a destination you pick on disk.</li>
+        <li><strong>Share link</strong> — a URL that lets anyone who has it download this one file for an hour, a day or a week; nothing else in your folder is reachable. Rotate your carrier secret or R2 token to cut every link off early.</li>
         <li><strong>Rename</strong> — pure manifest event; the underlying ciphertext is unchanged on the bucket.</li>
         <li><strong>History</strong> — see every change to that file: when it was created, every update + size delta, any rename, the delete if present. Read from the manifest already in memory; no network call.</li>
         <li><strong>Delete</strong> — moves the file to <strong>Trash</strong>. It stays there for 30 days and can be restored (to its old place, or as <em>name (restored)</em> if the old name is taken); after that its data is removed from your storage. <strong>Delete forever</strong> and <strong>Empty trash</strong> remove data now.</li>
