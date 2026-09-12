@@ -4,29 +4,41 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
 <title>Crate — User Guide</title>
 <meta name="description" content="Walk-through guide for Crate: a personal cloud folder, encrypted in your browser, in a bucket you own.">
 <style>
   :root {
-    --bg: #0a0a0a;
-    --surface: #141414;
-    --surface-2: #1c1c1c;
-    --surface-3: #232323;
-    --border: #262626;
-    --border-strong: #3a3a3a;
-    --text: #e5e5e5;
-    --muted: #737373;
-    --muted-2: #525252;
-    --accent: #fafafa;
-    --ok: #4ade80;
-    --warn: #fbbf24;
-    --error: #f87171;
-    --link: #93c5fd;
+    --bg: #f6f5f2;
+    --surface: #ffffff;
+    --surface-2: #f1f0ec;
+    --surface-3: #e5e2dc;
+    --border: #e5e2dc;
+    --border-strong: #cfcbc3;
+    --text: #1c1b19;
+    --muted: #6d6a64;
+    --muted-2: #9a968f;
+    --accent: #2f6fdb;
+    --on-accent: #ffffff;
+    --accent-soft: #e3ecfb;
+    --ok: #1f7a3f;
+    --ok-soft: #e6f4ea;
+    --warn: #9a6a12;
+    --error: #c0392b;
+    --link: #2f6fdb;
     --tap: 44px;
     --radius: 8px;
     --gap: 16px;
     --font: system-ui, -apple-system, sans-serif;
     --mono: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f0f0f; --surface: #171717; --surface-2: #1f1f1f; --surface-3: #2a2a2a;
+      --border: #262626; --border-strong: #3a3a3a; --text: #e5e5e5; --muted: #8a8a8a; --muted-2: #5c5c5c;
+      --accent: #4f83e6; --on-accent: #ffffff; --accent-soft: #1b2a45;
+      --ok: #4ade80; --ok-soft: #12271a; --warn: #fbbf24; --error: #f87171; --link: #93c5fd;
+    }
   }
   * { box-sizing: border-box; }
   html, body { background: var(--bg); color: var(--text); }
@@ -109,7 +121,7 @@
     background: var(--surface);
     overflow: hidden;
     margin: 1rem 0 1.5rem;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
   }
   .screen-chrome {
     background: var(--surface-2);
@@ -197,7 +209,7 @@
     display: inline-flex; align-items: center; gap: 0.35rem;
     cursor: default;
   }
-  .mock-btn.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 500; }
+  .mock-btn.primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); font-weight: 600; }
   .mock-btn.block { display: flex; width: 100%; justify-content: center; padding: 0.65rem; }
   .mock-btn.danger { color: var(--error); }
   .mock-pill {
@@ -206,7 +218,7 @@
     background: var(--surface-3); color: var(--muted);
     font-size: 0.78rem; border: 1px solid var(--border);
   }
-  .mock-pill.ok { background: rgba(74, 222, 128, 0.12); color: var(--ok); border-color: rgba(74, 222, 128, 0.4); }
+  .mock-pill.ok { background: var(--ok-soft); color: var(--ok); border-color: transparent; }
   .mock-pill.warn { background: rgba(251, 191, 36, 0.12); color: var(--warn); border-color: rgba(251, 191, 36, 0.4); }
   .mock-pill.fail { background: rgba(248, 113, 113, 0.12); color: var(--error); border-color: rgba(248, 113, 113, 0.4); }
   .mock-row { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
@@ -263,6 +275,46 @@
   .mock-tree .name { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .mock-tree .date { color: var(--muted); font-size: 0.74rem; }
   .mock-tree .size { color: var(--muted); font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+
+  /* The shell — topbar + sidebar — frames the landing and the folder,
+     as it does live. Wizard-stage mocks show the content column only. */
+  .mock-shell { display: flex; flex-direction: column; background: var(--bg); min-height: 380px; font-size: 0.85rem; }
+  .mock-topbar { display: flex; align-items: center; gap: 0.75rem; padding: 0 0.9rem; height: 42px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .mock-topbar .brand { font-weight: 600; letter-spacing: -0.02em; width: 120px; flex-shrink: 0; color: var(--text); }
+  .mock-topbar .search { flex: 1; max-width: 300px; margin: 0 auto; padding: 0.3rem 0.6rem; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--muted-2); font-size: 0.8rem; }
+  .mock-topbar .right { width: 120px; flex-shrink: 0; display: flex; justify-content: flex-end; gap: 0.4rem; align-items: center; color: var(--muted); font-size: 0.8rem; }
+  .mock-topbar .dots { width: 26px; height: 26px; border: 1px solid var(--border); border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; color: var(--muted); }
+  .mock-shell-body { display: flex; flex: 1; min-height: 0; }
+  .mock-sidebar { width: 150px; flex-shrink: 0; background: var(--surface-2); border-right: 1px solid var(--border); padding: 0.7rem 0.5rem; display: flex; flex-direction: column; gap: 2px; }
+  .mock-sidebar.dim { opacity: 0.45; }
+  .mock-sidebar .item { padding: 0.4rem 0.55rem; border-radius: 6px; color: var(--muted); font-weight: 500; border: 1px solid transparent; display: flex; justify-content: space-between; }
+  .mock-sidebar .item.active { background: var(--surface); border-color: var(--border); color: var(--text); font-weight: 600; }
+  .mock-sidebar .item .n { color: var(--muted-2); font-size: 0.75rem; }
+  .mock-sidebar .sep { border-top: 1px solid var(--border); margin: 0.5rem 0.4rem; }
+  .mock-sidebar .foot { margin-top: auto; padding: 0.4rem 0.55rem 0; color: var(--muted); font-size: 0.72rem; }
+  .mock-content { flex: 1; min-width: 0; padding: 1rem 1.1rem; display: flex; flex-direction: column; }
+  .mock-content.center { align-items: center; justify-content: center; }
+  .mock-card { width: 100%; max-width: 360px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.1rem; display: flex; flex-direction: column; gap: 0.7rem; }
+  .mock-card h2 { margin: 0; font-size: 1.05rem; font-weight: 600; letter-spacing: -0.02em; line-height: 1.25; }
+  .mock-card .lead { color: var(--muted); font-size: 0.8rem; margin: 0; line-height: 1.45; }
+  .mock-card .facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; border-top: 1px solid var(--border); padding-top: 0.6rem; font-size: 0.7rem; color: var(--muted); }
+  .mock-card .facts strong { display: block; color: var(--text); font-size: 0.74rem; }
+  .mock-card .links { display: flex; gap: 0.6rem; flex-wrap: wrap; font-size: 0.72rem; color: var(--muted); }
+  .mock-view-head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem; }
+  .mock-view-head h2 { margin: 0; font-size: 1.05rem; font-weight: 600; letter-spacing: -0.02em; }
+  .mock-view-head .tools { display: flex; gap: 0.35rem; }
+  .mock-list { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; list-style: none; margin: 0; padding: 0; }
+  .mock-list li { display: grid; grid-template-columns: 26px 1fr 64px 56px; gap: 0.5rem; align-items: center; padding: 0.45rem 0.65rem; margin: 0; max-width: none; border-bottom: 1px solid var(--border); font-size: 0.82rem; }
+  .mock-list li:last-child { border-bottom: 0; }
+  .mock-list li.head { font-size: 0.68rem; color: var(--muted); padding: 0.35rem 0.65rem; }
+  .mock-list .ic { width: 22px; height: 22px; border-radius: 5px; background: var(--surface-2); display: inline-flex; align-items: center; justify-content: center; color: var(--muted); }
+  .mock-list .ic.dir { background: var(--accent-soft); color: var(--accent); }
+  .mock-list .ic svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linejoin: round; }
+  .mock-list .name { color: var(--text); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mock-list .meta { color: var(--muted); font-size: 0.76rem; white-space: nowrap; }
+  .mock-list .meta.r { text-align: right; font-variant-numeric: tabular-nums; }
+  .mock-drop { margin-top: 0.7rem; border: 1.5px dashed var(--border); border-radius: 8px; padding: 0.6rem; text-align: center; color: var(--muted); font-size: 0.72rem; }
+  @media (max-width: 640px) { .mock-sidebar { display: none; } .mock-topbar .search { display: none; } .mock-list li { grid-template-columns: 26px 1fr 56px; } .mock-list .meta.d { display: none; } }
   .mock-tree .actions { color: var(--muted); font-size: 0.85rem; }
   .mock-tree li.dir .name { color: var(--link); font-weight: 500; }
 
@@ -376,30 +428,28 @@
           <div class="screen-dots"><span></span><span></span><span></span></div>
           <div class="screen-url">crate.naklios.dev</div>
         </div>
-        <div class="screen-body">
-          <div class="mock-welcome">
-            <div class="mock-wordmark">Crate</div>
-            <p class="mock-tagline">Your own cloud folder. Files live in storage you control, encrypted on your device before they upload — so the only person who can read them is you.</p>
-            <ul class="mock-promise">
-              <li>
-                <span class="icon">🔒</span>
-                <span class="txt"><strong>End-to-end encrypted</strong><span>AES-256 in this tab. Your passphrase never leaves your device, so nobody else can read your files — not us, not your storage provider.</span></span>
-              </li>
-              <li>
-                <span class="icon">🪣</span>
-                <span class="txt"><strong>Your storage, your keys</strong><span>A bucket in your own Cloudflare account, set up for you in one click — or bring your own (R2, Hetzner, Backblaze, AWS). We never hold your data and there's nothing to subscribe to.</span></span>
-              </li>
-              <li>
-                <span class="icon">🚫</span>
-                <span class="txt"><strong>No account, no middleman</strong><span>No NakliTechie sign-up, no server on the path, no telemetry. Just your browser talking to your bucket.</span></span>
-              </li>
-            </ul>
-            <div class="mock-landing-actions">
-              <button class="mock-btn block primary">Get started — about a minute</button>
-              <button class="mock-btn block">Already set up? Open your folder</button>
+        <div class="mock-shell">
+          <div class="mock-topbar"><span class="brand">Crate</span><span class="search">Search your files</span><span class="right">How it works</span></div>
+          <div class="mock-shell-body">
+            <div class="mock-sidebar dim">
+              <div class="item active">All files</div><div class="item">Recent</div><div class="item">Photos</div>
+              <div class="sep"></div><div class="item">Devices</div><div class="item">Backup</div>
+              <div class="foot">Nothing stored yet</div>
             </div>
-            <p class="mock-landing-help"><span class="mock-link">How it works</span> · <span class="mock-link">Use a bucket you already have</span></p>
-            <p class="mock-landing-meta">Before you start — you'll need: a free Cloudflare account · a free GitHub account · a passphrase you'll remember.</p>
+            <div class="mock-content center">
+              <div class="mock-card">
+                <h2>Your files, in a folder only you can read.</h2>
+                <p class="lead">Crate is a cloud folder that lives in free storage you own. Files are locked on this device before they upload — no account with us, nothing to subscribe to.</p>
+                <button class="mock-btn block primary">Get started — about a minute</button>
+                <button class="mock-btn block">Already set up? Open your folder</button>
+                <div class="facts">
+                  <div><strong>Locked on your device</strong>Encrypted before upload.</div>
+                  <div><strong>Your storage</strong>A free Cloudflare account.</div>
+                  <div><strong>No middleman</strong>No Crate account, no server.</div>
+                </div>
+                <div class="links"><span>How it works</span><span>Use a bucket you already have</span><span>Guide</span><span>GitHub</span></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -559,7 +609,7 @@
 
       <h4>Stage 4 — Passphrase (both paths)</h4>
       <p>
-        The wizard shows you <strong>five random words</strong>, numbered. Write them down — on paper or in your password manager — tick <em>I've saved these five words</em>, and click <strong>Next</strong>. That's your passphrase: about 55 bits of strength, roughly 60,000 years for one GPU to exhaust, and words are far easier to copy correctly than symbols. <strong>Different words</strong> deals a new set. The words come from the public 2048-word BIP-39 list, shipped inside the page; the strength is in the random choice, not the list.
+        The wizard shows you <strong>five random words</strong>, numbered, and the passphrase they make when joined with hyphens — <code>sphere-cancel-scan-blanket-interest</code>. Write that line down exactly — on paper or in your password manager — tick <em>I've saved the hyphenated passphrase</em>, and click <strong>Next</strong>. (Crate's own unlock screen also accepts the words with spaces; the desktop daemon wants the hyphens.) That's your passphrase: about 55 bits of strength, roughly 60,000 years for one GPU to exhaust, and words are far easier to copy correctly than symbols. <strong>Different words</strong> deals a new set. The words come from the public 2048-word BIP-39 list, shipped inside the page; the strength is in the random choice, not the list.
       </p>
       <p>
         Prefer to choose your own? Click <em>I'd rather choose my own passphrase</em>. You'll type it twice; the strength bar (<a href="https://github.com/zxcvbn-ts/zxcvbn">zxcvbn</a>) turns green at the recommended 55 bits — five unrelated words, or twelve random mixed characters. Below that, the page tells you how long one GPU would need to crack it and lets you accept the trade-off with a tick; only the trivial (under 20 bits — a single word, a birthday) is refused outright.
@@ -646,92 +696,68 @@
         Click <strong>Open your folder</strong> and the wizard hands off to the folder UI:
       </p>
 
-      <div class="screen">
+      <div class="screen" aria-label="Crate folder screen mockup">
         <div class="screen-chrome">
           <div class="screen-dots"><span></span><span></span><span></span></div>
           <div class="screen-url">crate.naklios.dev</div>
         </div>
-        <div class="screen-body tight">
-          <div class="mock-folder-header">
-            <h2>Your Crate</h2>
-            <span class="mock-folder-stats">12 files · 47 MB · encrypted</span>
-          </div>
-          <div class="mock-folder-toolbar">
-            <div class="left">
-              <button class="mock-btn primary">⬆ Upload</button>
-              <button class="mock-btn">📁 New folder</button>
+        <div class="mock-shell">
+          <div class="mock-topbar"><span class="brand">Crate</span><span class="search">Search your files</span><span class="right"><span class="mock-pill ok">Encrypted</span><span class="dots">···</span></span></div>
+          <div class="mock-shell-body">
+            <div class="mock-sidebar">
+              <div class="item active">All files</div><div class="item">Recent</div><div class="item">Photos <span class="n">2</span></div>
+              <div class="sep"></div><div class="item">Devices</div><div class="item">Backup</div>
+              <div class="foot">47 MB in 12 files · encrypted</div>
             </div>
-            <div class="right">
-              <button class="mock-btn" title="Refresh">⟳</button>
-              <button class="mock-btn">🔐 Credentials</button>
-              <button class="mock-btn">Pair an agent</button>
-              <button class="mock-btn">Export</button>
-              <button class="mock-btn danger">🔒 Lock</button>
+            <div class="mock-content">
+              <div class="mock-view-head"><h2>All files</h2><div class="tools"><button class="mock-btn">New folder</button><button class="mock-btn primary">↑ Upload</button></div></div>
+              <ul class="mock-list">
+                <li class="head"><span></span><span>Name</span><span class="meta d">Modified</span><span class="meta r">Size</span></li>
+                <li><span class="ic dir"><svg viewBox="0 0 24 24"><path d="M3 7h6l2 2h10v10H3z"/></svg></span><span class="name">notes</span><span class="meta d">21 May</span><span class="meta r">—</span></li>
+                <li><span class="ic dir"><svg viewBox="0 0 24 24"><path d="M3 7h6l2 2h10v10H3z"/></svg></span><span class="name">photos</span><span class="meta d">19 May</span><span class="meta r">—</span></li>
+                <li><span class="ic"><svg viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9 12h6M9 16h6"/></svg></span><span class="name">project-notes.md</span><span class="meta d">21 May</span><span class="meta r">4.2 KB</span></li>
+                <li><span class="ic"><svg viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/></svg></span><span class="name">contract.pdf</span><span class="meta d">12 May</span><span class="meta r">230 KB</span></li>
+                <li><span class="ic"><svg viewBox="0 0 24 24"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg></span><span class="name">demo-track.mp3</span><span class="meta d">30 Apr</span><span class="meta r">5.8 MB</span></li>
+              </ul>
+              <div class="mock-drop">Drop files anywhere here — they're encrypted before they leave this tab.</div>
             </div>
           </div>
-          <input class="mock-search" value="Filter files in this folder…" readonly>
-          <div class="mock-breadcrumb">
-            <a href="#">Home</a> <span class="sep">›</span> <a href="#">notes</a> <span class="sep">›</span> <span class="current">2026</span>
-          </div>
-          <ul class="mock-tree">
-            <li class="dir">
-              <span class="icon">📁</span>
-              <span class="main"><div class="name">photos</div></span>
-              <span class="size">—</span>
-              <span class="actions">✎ ✕</span>
-            </li>
-            <li>
-              <span class="icon">📝</span>
-              <span class="main"><div class="name">project-notes.md</div><div class="date">May 21</div></span>
-              <span class="size">4.2 KB</span>
-              <span class="actions">👁 ↓ ✎ ⏱ ✕</span>
-            </li>
-            <li>
-              <span class="icon">🖼</span>
-              <span class="main"><div class="name">cover.png</div><div class="date">May 19</div></span>
-              <span class="size">1.3 MB</span>
-              <span class="actions">👁 ↓ ✎ ⏱ ✕</span>
-            </li>
-            <li>
-              <span class="icon">📕</span>
-              <span class="main"><div class="name">contract.pdf</div><div class="date">May 12</div></span>
-              <span class="size">230 KB</span>
-              <span class="actions">↓ ✎ ⏱ ✕</span>
-            </li>
-            <li>
-              <span class="icon">🎵</span>
-              <span class="main"><div class="name">demo-track.mp3</div><div class="date">Apr 30</div></span>
-              <span class="size">5.8 MB</span>
-              <span class="actions">↓ ✎ ⏱ ✕</span>
-            </li>
-          </ul>
         </div>
       </div>
 
+      <h3>The shell</h3>
+      <p>
+        The frame you landed in stays: the sidebar on the left switches views, the search box at the top filters whatever list you're looking at, and the <strong>···</strong> menu at the top right holds <strong>Refresh from storage</strong> and <strong>Lock</strong>. The footer of the sidebar keeps a running total — size, file count, and the word <em>encrypted</em>.
+      </p>
+      <ul>
+        <li><strong>All files</strong> — the folder tree. Click a folder to open it; the breadcrumb under the title takes you back up.</li>
+        <li><strong>Recent</strong> — the 50 most recently added or changed files from anywhere in the tree, newest first, each with the folder it lives in.</li>
+        <li><strong>Photos</strong> — every image in the tree (by type or extension), with a count next to the label. A list, not thumbnails: showing thumbnails would mean decrypting every image on open.</li>
+        <li><strong>Devices</strong> — this browser, plus <strong>Pair an agent</strong> for the desktop daemon. See <a href="#daemon">section 7</a>.</li>
+        <li><strong>Backup</strong> — <strong>Download credentials file</strong> (re-emit the encrypted <code>.crate-creds</code> at any time), <strong>Export everything</strong> (a zip, or a stream to a folder on disk for large collections), and the passphrase reminder.</li>
+      </ul>
+
       <h3>The toolbar</h3>
       <ul>
-        <li><strong>⬆ Upload</strong> — open a file picker, or drag files directly onto the page. They encrypt + upload one at a time.</li>
-        <li><strong>📁 New folder</strong> — empty folders are recorded as explicit events in the manifest so they survive across devices.</li>
-        <li><strong>⟳ Refresh</strong> — pulls the latest manifest from the bucket. (Sync is automatic every ~15 s; this is for impatient checks.)</li>
-        <li><strong>🔐 Credentials</strong> — re-download the encrypted <code>.crate-creds</code> file at any time. Use this if you skipped the download at setup.</li>
-        <li><strong>Pair an agent</strong> — issue a one-time pairing token to set up the desktop daemon. See <a href="#daemon">section 7</a>.</li>
-        <li><strong>Export</strong> — download all your files as a single zip (or stream to a folder on disk for larger Crates). Useful as a one-shot backup or migration tool.</li>
-        <li><strong>🔒 Lock</strong> — zero the master key, clear in-tab session state, return to the start screen. Use before leaving the laptop unattended.</li>
+        <li><strong>↑ Upload</strong> — open a file picker, or drag files directly onto the page. They encrypt + upload one at a time.</li>
+        <li><strong>New folder</strong> — empty folders are recorded as explicit events in the manifest so they survive across devices.</li>
+        <li><strong>··· → Refresh from storage</strong> — pulls the latest manifest from the bucket. (Sync is automatic every ~15 s; this is for impatient checks.)</li>
+        <li><strong>··· → Lock</strong> — zero the master key, clear in-tab session state, return to the start screen. Use before leaving the laptop unattended.</li>
       </ul>
 
       <h3>Per-file actions</h3>
-      <p>Hover any file row. The buttons on the right reveal:</p>
+      <p>Hover any file row (on a phone they are always shown) and the modified date and size give way to the actions:</p>
       <ul>
-        <li><strong>👁 Preview</strong> — open text or image files inline without downloading. Files larger than 50 MB show a "too large to preview, use Download" message.</li>
-        <li><strong>↓ Download</strong> — decrypt + save to your Downloads folder. Large files stream straight to a destination you pick on disk.</li>
-        <li><strong>✎ Rename</strong> — pure manifest event; the underlying ciphertext is unchanged on the bucket.</li>
-        <li><strong>⏱ History</strong> — see every change to that file: when it was created, every update + size delta, any rename, the delete if present. Read from the manifest already in memory; no network call.</li>
-        <li><strong>✕ Delete</strong> — DELETEs the object and appends a delete event. There is no trash bin in v1.</li>
+        <li><strong>Preview</strong> — open text or image files inline without downloading. Files larger than 50 MB show a "too large to preview, use Download" message.</li>
+        <li><strong>Download</strong> — decrypt + save to your Downloads folder. Large files stream straight to a destination you pick on disk.</li>
+        <li><strong>Rename</strong> — pure manifest event; the underlying ciphertext is unchanged on the bucket.</li>
+        <li><strong>History</strong> — see every change to that file: when it was created, every update + size delta, any rename, the delete if present. Read from the manifest already in memory; no network call.</li>
+        <li><strong>Delete</strong> — DELETEs the object and appends a delete event. There is no trash bin in v1.</li>
       </ul>
 
       <h3>Search</h3>
       <p>
-        The search box under the toolbar filters the <em>current folder</em> by basename substring, case-insensitive. Clears when you click any breadcrumb to navigate.
+        The search box in the top bar filters the list you're looking at — the current folder in All files, or the whole of Recent / Photos — by name, case-insensitive. It clears when you navigate.
       </p>
 
       <h3>Drag-and-drop</h3>
@@ -821,7 +847,7 @@
         <li><strong>My own bucket:</strong> bucket name, Cloudflare Account ID, Access Key, Secret Access Key, passphrase.</li>
       </ul>
       <p>
-        Either way, re-download a fresh <code>.crate-creds</code> file from the folder UI's <strong>🔐 Credentials</strong> button once you're back in.
+        Either way, re-download a fresh <code>.crate-creds</code> file from <strong>Backup → Download credentials file</strong> once you're back in.
       </p>
 
       <h3>Refresh keeps you logged in</h3>
@@ -843,7 +869,7 @@
       <ol>
         <li><strong>Run the desktop daemon (recommended).</strong> <code>crate-agent</code> keeps a plaintext mirror at <code>~/crate/</code> on macOS or Linux. Point Time Machine, restic, rsync, or whatever you already use at that folder. The plaintext lives on hardware you control.</li>
         <li><strong>Mirror the bucket.</strong> <code>rclone sync r2:bucket-A r2:bucket-B</code>, or use Cloudflare's R2 → R2 replication. Ciphertext-preserving; restore = swap creds in the wizard.</li>
-        <li><strong>Export from the browser.</strong> The folder UI's <strong>Export</strong> button gives you a zip of everything. One-shot — use the daemon for recurring backups.</li>
+        <li><strong>Export from the browser.</strong> <strong>Backup → Export everything</strong> gives you a zip of everything. One-shot — use the daemon for recurring backups.</li>
       </ol>
 
       <h3>Three disaster scenarios</h3>
@@ -868,7 +894,7 @@
         <div class="col ok-col">
           <h4>You lost the creds file, but have the passphrase</h4>
           <p style="margin:0; color: var(--muted); font-size:0.92rem;">
-            Fine. Use the 5-input manual unlock to get back in, then click 🔐 Credentials in the folder UI to download a fresh file.
+            Fine. Use the 5-input manual unlock to get back in, then use <strong>Backup → Download credentials file</strong> to download a fresh file.
           </p>
         </div>
         <div class="col ok-col">
@@ -917,11 +943,11 @@ chmod +x crate-agent && sudo mv crate-agent /usr/local/bin/
       <h3>Pair + start</h3>
       <p><strong>One-click folder</strong> (crate-agent v1.3 or later):</p>
       <ol>
-        <li>In your Crate folder UI, click <strong>Pair an agent</strong>. The modal shows the exact command and a button that copies your carrier secret.</li>
+        <li>In Crate, open <strong>Devices</strong> and click <strong>Pair an agent</strong>. The modal shows the exact command and a button that copies your carrier secret.</li>
         <li>In a terminal: <code>crate-agent pair --carrier https://crate-carrier-….workers.dev</code>. Paste the carrier secret, then type your folder passphrase. It verifies against the Worker and runs <code>doctor</code>.</li>
         <li><code>crate-agent start</code> to run in the foreground, or <code>crate-agent install-service</code> to install as a launchd / systemd-user unit that starts at login.</li>
       </ol>
-      <p><strong>Hub-based folder:</strong> <strong>Pair an agent</strong> shows a <code>CRATE-PAIR-…</code> token + QR code with a 15-minute countdown; run <code>crate-agent pair</code>, paste the token, type your passphrase, then <code>doctor</code> and <code>start</code> as above.</p>
+      <p><strong>Hub-based folder:</strong> <strong>Devices → Pair an agent</strong> shows a <code>CRATE-PAIR-…</code> token + QR code with a 15-minute countdown; run <code>crate-agent pair</code>, paste the token, type your passphrase, then <code>doctor</code> and <code>start</code> as above.</p>
       <p>
         Once running, <code>~/crate/</code> is bidirectional with the browser within ~15 seconds. Full daemon docs in the <a href="https://github.com/NakliTechie/crate-agent">crate-agent repo</a>.
       </p>

@@ -14,6 +14,7 @@ The page opens as a file manager, not as a setup wizard. A persistent shell — 
 - **Recent** (last 50 files by manifest timestamp, with the parent folder under each name) and **Photos** (every image, with a count in the sidebar) are derived from the manifest — no new events, no thumbnails (that would mean decrypting every image on open).
 - Narrow screens: the sidebar becomes a scrollable row of view pills under the topbar; the locked state hides it and the search field so the card fills the screen. The three-row toolbar wrap at 375 px is gone with the toolbar.
 - New modules `lib/shell.js` (topbar + sidebar wiring) and `lib/icons.js`; `FolderUI` gains `view`, `setView()`, `entriesForView()` and takes `opts.shell`; the wizard exposes `openHelp()`. `smoke.sh` checks the shell contract instead of the removed auto-open.
+- `guide/index.html` follows: light palette (dark with the system), the landing and folder mock screens drawn as the shell, the toolbar/actions sections rewritten around the sidebar views and the `···` menu.
 - Not changed: the wizard stages themselves, the wire format, the ESM API, `.crate-creds`, pairing.
 
 ### Added — one-click onboarding through a carrier Worker
