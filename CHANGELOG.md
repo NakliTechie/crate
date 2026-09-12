@@ -13,6 +13,10 @@ All notable changes to Crate. Format loosely follows [Keep a Changelog](https://
 - ESM API (additive): `Crate.open({ recoveryEntropy })`, `crate.setPassphrase(newPassphrase)`, `crate.enableRecovery(entropy)`, `crate.hasRecovery`.
 - `lib/vault.js`: `sealVault` / `openVault` / `rewrapVault` — the one place that knows the key slots; unlock-via-phrase (phase 5) and enable-recovery (phase 6) build on it. Tests: `test/vault.test.mjs`, `test/crate-vault.test.mjs` (bootstrap + open by either credential against an in-memory bucket, wrong credential named, legacy v1.0 still opens).
 
+### Added — PDF, audio and video previews
+
+- Preview opens PDFs in the browser's own viewer (a frame over the decrypted blob), and plays audio and video with the native `<audio>` / `<video>` elements — whole-file decrypt in the tab, so the 50 MB preview cap applies; streaming decrypt over Range requests is a later step. Formats the browser can't play say so and point at Download. The shared-file page previews the same kinds. CSP gains `media-src 'self' blob:` and `frame-src blob:`.
+
 ### Added — share links
 
 - **Share link** on any file: a URL that lets anyone who has it download that one file for 1 hour, 1 day or 7 days. The fragment (`#share=…`, never sent to a server) carries a presigned GET for the object — sig-v4 query auth on R2/S3/B2/Hetzner (`lib/sigv4.js::presignUrl`, pinned to the AWS reference vector), or the carrier's new `?share=1&exp&sig` route — plus the file's own data key, the manifest-signed IV and chunk size. The recipient page (the same `index.html`, locked shell, one card) fetches ciphertext with no credentials and decrypts in the tab: Download, and Preview for text and images. Nothing else in the folder is reachable; revoke early by rotating the carrier secret / R2 token, or Delete forever. A carrier deployed before this is detected via `/health` and told how to sync its fork. Tests: `test/share.test.mjs`, `test/sigv4-presign.test.mjs`.

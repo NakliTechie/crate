@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https:; img-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'self' https://naklios.dev;"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https:; img-src 'self' blob: data:; media-src 'self' blob:; frame-src blob:; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'self' https://naklios.dev;"
     />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#f6f5f2" media="(prefers-color-scheme: light)" />
@@ -675,6 +675,9 @@
       .preview-card { max-width: 48rem; }
       .preview-image { max-width: 100%; max-height: 70vh; object-fit: contain; background: var(--surface-2); border: 1px solid var(--border); border-radius: 4px; }
       .preview-text { max-height: 60vh; overflow: auto; white-space: pre-wrap; word-break: break-word; }
+      .preview-frame { width: 100%; height: 70vh; border: 1px solid var(--border); border-radius: 4px; background: var(--surface-2); }
+      .preview-video { width: 100%; max-height: 70vh; background: #000; border-radius: 4px; }
+      .preview-audio { width: 100%; }
       .pair-qr { background: var(--surface-2); border: 1px dashed var(--border-strong); border-radius: var(--radius); padding: 1rem; text-align: center; }
       .qr-placeholder { color: var(--muted); }
       @media (prefers-reduced-motion: reduce) {
