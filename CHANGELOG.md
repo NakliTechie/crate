@@ -29,6 +29,10 @@ The page opens as a file manager, not as a setup wizard. A persistent shell — 
 - Status pills wrap on narrow screens instead of drawing their border through the second line.
 - Tests: `test/carrier-transport.test.mjs`. Walked end to end against a Deploy-button-provisioned Worker: setup, two uploads, and an independent read-back with matching SHA-256s.
 
+### Fixed — the five suggested words open the folder with spaces or dashes
+
+Found on the live-site walk of the redesign: the passphrase stage shows five word chips and says "write them down", but the passphrase is stored dash-joined (`sphere-cancel-scan-blanket-interest`). Typing the words with spaces on unlock failed with `manifest: decrypt failed: OperationError`. Every unlock path (credentials file, manual details, refresh-resume) now tries the typed form, then spaces→dashes and dashes→spaces, and adopts the one that opens (`lib/passphrase.js`, `test/passphrase.test.mjs`). Only wrong-passphrase failures are retried; network and schema errors are not. The stage now shows the typed-out form under the chips, and a wrong passphrase reads as a sentence instead of an `OperationError`.
+
 ### Changed — chunked object framing (v2)
 
 Files are now encrypted as independent AES-256-GCM chunks (8 MiB plaintext each) rather than one blob, so the per-chunk memory ceiling no longer scales with file size and each chunk can later be uploaded as its own R2 multipart part. `lib/crypto.js` gains `sealObject` / `openObject`, the only producer and consumer of an `objects/{uuid}` body; the four read sites (`Crate.read`, folder download, folder preview, export) and three write sites that each carried their own copy of the parse-and-verify logic now share them.

@@ -342,5 +342,6 @@ node --no-warnings test/chunked-crypto.test.mjs
 node --no-warnings test/manifest-chunked.test.mjs
 node --no-warnings test/cross-surface-daemon.test.mjs
 node --no-warnings test/carrier-transport.test.mjs
+node --no-warnings test/passphrase.test.mjs
 
 echo "OK: crate v1"
