@@ -59,6 +59,12 @@ Why per-file keys? So that if a single data key ever leaks (e.g., a debugger sna
 
 The AAD-on-UUID binding is the row-swap defense: if an attacker swaps two `objects/{uuid}` blobs in the bucket, the unwrap step fails authentication because the AAD no longer matches the ciphertext's intended UUID.
 
+### Compression (v1.2)
+
+Before sealing, a file whose type is not already compressed (by extension and mime; images, audio, video, archives, PDF and office formats are skipped; under 256 bytes never) is deflated with raw DEFLATE. If that saves less than 10 % the original bytes are sealed instead. The manifest's `create` / `update` event then carries `compression: "deflate-raw"` and `stored_size` — the deflated length, which is what the chunk framing below is computed over — while `size` remains the real file size. Readers check the framing against `stored_size`, decrypt, inflate, and check the result against `size`; a reader that predates the field sees a length it cannot explain and fails closed. The daemon (≥ 1.4.0) applies the same rule on its own uploads, so both surfaces write the same bytes for the same file.
+
+Compression happens on plaintext in the tab and ciphertext lengths therefore leak *roughly how compressible* a file is — the same class of information the size already leaks. Nothing else changes: keys, AAD, chunk layout are identical.
+
 ### File ciphertext
 
 - **Algorithm**: AES-256-GCM with the per-file data key.

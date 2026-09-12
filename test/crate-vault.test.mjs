@@ -216,3 +216,26 @@ store.clear();
   assert.equal((await m3.verify(bKey)).ok, false);
 }
 console.log("OK: rekey — fresh content key, data keys re-wrapped, chain re-signed with a generation the anchor accepts; replay refused");
+
+// --- compression through the Crate API: write → read, update keeps working, share carries it
+store.clear();
+{
+  const c = await Crate.bootstrap({ bucketConfig, credentials, passphrase: PASS });
+  const big = new TextEncoder().encode("row,value\n".repeat(5000));
+  await c.write("/data.csv", big, { mime: "text/csv" });
+  const e = c._manifest.materialise().get("/data.csv");
+  assert.equal(e.compression, "deflate-raw");
+  assert.ok(e.stored_size < big.length / 5);
+  assert.equal(e.size, big.length);
+  const obj = store.get(c._bucketBase + "objects/" + e.uuid).body;
+  assert.ok(obj.length < big.length / 4, "the bucket holds the deflated bytes");
+  assert.equal(Buffer.from(await c.read("/data.csv")).toString(), Buffer.from(big).toString());
+  // an update to incompressible content drops the flag for that version
+  const noise = cryptoLib.randomBytes(3000);
+  await c.write("/data.csv", noise, { mime: "text/csv" });
+  const e2 = c._manifest.materialise().get("/data.csv");
+  assert.equal(e2.compression, undefined);
+  assert.equal(Buffer.from(await c.read("/data.csv")).toString("hex"), Buffer.from(noise).toString("hex"));
+  c.close();
+}
+console.log("OK: compression — Crate.write deflates text, read inflates, per-version flag");

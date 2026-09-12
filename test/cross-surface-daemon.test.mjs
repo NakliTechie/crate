@@ -22,3 +22,20 @@ const body = fromBase64(f.body); body[0] ^= 1;
 await assert.rejects(() => openObject(key, body, entry), /does not match manifest content_iv/, "flipped IV_0 rejected");
 
 console.log(`OK: browser opens daemon-sealed v2 object (${f.producer})`);
+
+// Compressed fixture (crate-agent ≥ 1.4): the browser inflates what the
+// daemon deflated.
+{
+  const { existsSync } = await import("node:fs");
+  const p = new URL("./fixtures/daemon-v2-compressed.json", import.meta.url);
+  if (existsSync(p)) {
+    const g = JSON.parse(await readFile(p, "utf8"));
+    const e = { uuid: g.uuid, size: g.size, content_iv: g.content_iv, chunk_size: g.chunk_size, compression: g.compression, stored_size: g.stored_size };
+    const out = await openObject(fromBase64(g.data_key), fromBase64(g.body), e);
+    assert.equal(out.length, g.size);
+    assert.equal(createHash("sha256").update(out).digest("hex"), g.plaintext_sha256);
+    console.log(`OK: browser opens daemon-sealed compressed object (${g.producer})`);
+  } else {
+    console.log("skip: no daemon compressed fixture yet");
+  }
+}

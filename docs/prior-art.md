@@ -234,7 +234,7 @@ priorities and ordering live in [`plan/pending.md`](../plan/pending.md).
   confirmation-of-file attack). Restic and Kopia have this; the
   payoff is much smaller buckets for users with image / video
   collections.
-- **Compression.** Zstd before encryption. Cheap win; transparent.
+- ~~Compression~~ — shipped in v1.2 (deflate-raw before seal, both surfaces). Zstd before encryption. Cheap win; transparent.
 - **Key rotation.** Passphrase change without re-encrypting every file:
   unwrap-and-rewrap all data keys under the new master, leave file
   ciphertexts alone. Manifest gets a `rekey` event recording the
