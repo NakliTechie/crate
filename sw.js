@@ -13,7 +13,7 @@
 // the app. VERSION is bumped by the release step; activating a new
 // version drops the old cache.
 
-const VERSION = "crate-static-v1.2.0-dev";
+const VERSION = "crate-static-v1.2.0";
 const PRECACHE = [
   "./",
   "./index.html",

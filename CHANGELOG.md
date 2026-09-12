@@ -2,7 +2,9 @@
 
 All notable changes to Crate. Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning follows [SemVer](https://semver.org/spec/v2.0.0.html); see the Versioning section in the README for what counts as breaking.
 
-## [Unreleased]
+## [1.2.0] — 2026-09-12
+
+Minor: every change is additive on the v1 wire format and API. New manifest events (`purge`, `rekey`) and fields (`compression`, `stored_size`) are ignored or fail closed on older readers; `.crate/crate.json` v1.1 gains nothing new; the ESM surface grows (`rekey`, `contentKey` open). **Pair with crate-agent ≥ 1.4.0** — an older daemon fails closed on compressed objects and refuses a re-keyed folder as a fork.
 
 ### Added — recovery phrase (T1, phases 3–4)
 

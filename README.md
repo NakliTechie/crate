@@ -2,7 +2,7 @@
 
 A cloud folder only you can read. Files live in storage you own — a free Cloudflare account by default — and are encrypted on your device before they upload. No account with us, no server on the path, nothing to subscribe to.
 
-Dropbox-shaped utility, NakliTechie-shaped substrate. **v1.1.0** — [CHANGELOG](CHANGELOG.md).
+Dropbox-shaped utility, NakliTechie-shaped substrate. **v1.2.0** — [CHANGELOG](CHANGELOG.md).
 
 ## Live
 
@@ -29,8 +29,9 @@ Already run your own bucket and API token? **Use a bucket you already have** (un
 - **Encrypted in the tab.** AES-256-GCM in 8 MiB chunks with per-file data keys under a random content key, which your passphrase or your recovery phrase unwraps (PBKDF2, 600 000 iterations); an HMAC-SHA256 signed, rollback-anchored manifest that fails closed. [`docs/encryption-model.md`](docs/encryption-model.md).
 - **Your storage.** The carrier Worker holds only an R2 binding and sees ciphertext; delete it and access ends. Or bring your own bucket — we never see your credentials.
 - **Same folder everywhere.** Same URL on your phone (~15 s sync). **Backup → Export everything** zips the lot (streams to disk when large). [`docs/backup.md`](docs/backup.md).
-- **Share a file.** A link that works for an hour, a day or a week; the recipient needs nothing. Deleted files wait 30 days in **Trash**.
-- **Optional desktop daemon** — [`crate-agent`](https://github.com/NakliTechie/crate-agent) mirrors the folder to plaintext `~/crate/` on macOS / Linux. Pair it from **Devices**.
+- **Share a file.** A link that works for an hour, a day or a week; the recipient needs nothing. Deleted files wait 30 days in **Trash**; search looks inside text files; PDFs and media preview in place.
+- **Two credentials, then some.** A 24-word recovery phrase for a lost passphrase; a passkey to open the folder on this device without typing it; re-key when you suspect a leak. Installable, and opens offline to the last-seen folder.
+- **Optional desktop daemon** — [`crate-agent`](https://github.com/NakliTechie/crate-agent) (≥ 1.4.0 for this release) mirrors the folder to plaintext `~/crate/` on macOS / Linux. Pair it from **Devices**.
 - **One static HTML file** plus small ESM modules, no build step. **AGPL-3.0.** Encryption is [`lib/crypto.js`](lib/crypto.js); every network call is [`lib/bucket.js`](lib/bucket.js); the creds format is [`lib/credsfile.js`](lib/credsfile.js). Read them.
 
 ## Unlocking
