@@ -1,45 +1,36 @@
 # Crate
 
-A personal cloud folder. Files live in a bucket you own (Cloudflare R2 by default), encrypted before they leave your browser. Open a tab, the folder is there — BYOK, AES-256-GCM client-side, no NakliTechie account on the path.
+A cloud folder only you can read. Files live in storage you own — a free Cloudflare account by default — and are encrypted on your device before they upload. No account with us, no server on the path, nothing to subscribe to.
 
-Dropbox-shaped utility, NakliTechie-shaped substrate.
+Dropbox-shaped utility, NakliTechie-shaped substrate. **v1.1.0** — [CHANGELOG](CHANGELOG.md).
 
 ## Live
 
-- **[`crate.naklios.dev`](https://crate.naklios.dev)** — canonical home, alongside the rest of [NakliOS](https://naklios.dev).
-- **[`crate.naklitechie.com`](https://crate.naklitechie.com)** — personal-project surface.
-
-Same app on both.
-
-## What it is
-
-- **One static HTML file** + a few small ESM modules. No build step; host it anywhere.
-- **End-to-end encrypted in the tab.** AES-256-GCM payloads with per-file data keys, wrapped by a PBKDF2 master key (600 000 iterations). Tamper-evident HMAC-SHA256 signed manifest. Details: [`docs/encryption-model.md`](docs/encryption-model.md).
-- **Bring your own bucket.** R2 by default; Hetzner / Backblaze B2 / AWS S3 via the same sig-v4 client. We never see your creds.
-- **Two-click unlock, refresh-resilient.** The downloaded `.crate-creds` file is useless without your passphrase — both required. Reload mid-session and the prompt shortens to passphrase-only.
-- **File-manager UI, from the first second.** The page opens as a file manager — sidebar (All files · Recent · Photos · Devices · Backup), search, Upload — with setup as a card inside it. Rename, drag-drop upload, text/image preview, per-file history. Keyboard-navigable, mobile-responsive, light or dark with your system.
-- **Cross-device sync + tiered export.** Same URL on your phone → same folder (~15 s). "Export folder" zips everything (streams to disk for large folders). Backup runbook: [`docs/backup.md`](docs/backup.md).
-- **Optional native daemon** ([`crate-agent`](https://github.com/NakliTechie/crate-agent)) mirrors the bucket to a plaintext `~/crate/` on macOS / Linux.
-- **AGPL-3.0.** Encryption is [`lib/crypto.js`](lib/crypto.js); every network call is [`lib/bucket.js`](lib/bucket.js); the creds format is [`lib/credsfile.js`](lib/credsfile.js). Read them.
+Same app on both: **[`crate.naklios.dev`](https://crate.naklios.dev)** (alongside [NakliOS](https://naklios.dev)) · **[`crate.naklitechie.com`](https://crate.naklitechie.com)**.
 
 ## Getting started
 
-About a minute, start to finish — **no API token, no CORS, no account ID**:
+About a minute. You need a free [Cloudflare](https://dash.cloudflare.com/sign-up) account and a free [GitHub](https://github.com/signup) account.
 
 1. Open [`crate.naklios.dev`](https://crate.naklios.dev) → **Get started**. Crate shows a secret it generated for you.
-2. Click **Deploy to Cloudflare**. Cloudflare copies the tiny [`crate-carrier`](https://github.com/NakliTechie/crate-carrier) Worker into your GitHub account, creates an R2 bucket for it, and asks for `CARRIER_SECRET` — paste the secret. (You'll need a free Cloudflare account and a free GitHub account; the first time, Cloudflare asks to connect the two.) The build takes about a minute — **its page does not update by itself; reload it** to see the result.
-3. When it says deployed, click **Visit** → **Continue to Crate**. Back in Crate the Worker's address is filled in: click **Verify**, then **Next →** and pick a passphrase.
-4. At **Done**, download the `.crate-creds` file and keep it with your passphrase — you need **both** to open the folder on another device ([Tijori](https://tijori.naklitechie.com), a password manager, a USB drive). Drop a file in. To open elsewhere: same URL → **Already set up? Open your folder** → the creds file + your passphrase.
+2. **Deploy to Cloudflare** copies the tiny [`crate-carrier`](https://github.com/NakliTechie/crate-carrier) Worker into your GitHub, creates an R2 bucket for it, and asks for `CARRIER_SECRET` — paste the secret. The build takes about a minute; reload its page to see the result.
+3. **Visit → Continue to Crate**, then **Verify**, then **Next** for your passphrase: five random words joined with hyphens (`sphere-cancel-scan-blanket-interest`). Write that line down.
+4. **Done** → download the `.crate-creds` file → **Open your folder**. Drop a file in.
 
-**What you keep, forever:** two things — the `.crate-creds` file and your passphrase. Nothing else. The file holds your connection details, encrypted under the passphrase; the passphrase is the key to your files and cannot be reset by anyone. Lose the file and you can re-enter the details manually (Worker URL + the carrier secret, which you can rotate on the Worker). Lose the passphrase and the files are gone.
+**What you keep:** the `.crate-creds` file and the passphrase — both are needed to open the folder anywhere else (**Already set up? Open your folder**), either alone is useless, and nobody can reset the passphrase. Lost the file? Enter the Worker URL and carrier secret by hand. Lost the passphrase? The files are gone.
 
-**Passphrase, in one line:** the wizard shows you five random words joined with hyphens (`sphere-cancel-scan-blanket-interest`) — write that down exactly, tick the box, done. Crate's unlock screen also accepts the words with spaces; the desktop daemon wants the hyphens. Prefer your own? Type it twice; the bar goes green at the recommended 55 bits ([zxcvbn](https://github.com/zxcvbn-ts/zxcvbn)'s estimate — five unrelated words, or twelve random mixed characters), and you may go lower after the page shows you how long one GPU would take to crack it. The word list is the public 2048-word BIP-39 English list, shipped inside the page; the strength comes from the random choice, not from the list being secret.
+Already run your own bucket and API token? **Use a bucket you already have** (under the card) is the four-step manual route — Cloudflare R2, Hetzner, Backblaze B2 or AWS S3 through the same sig-v4 client.
 
-The Worker is yours, in your account, and holds only an R2 *binding* — it sees ciphertext and nothing else; delete it and access ends. Prefer manual setup with your own API token? **Use a bucket you already have** (under the card) is the original four-step route; its wizard walks through Cloudflare R2 (Hetzner, Backblaze and S3 work through the same fields if you know their endpoints).
+**Full illustrated walk-through:** [`guide/`](guide/index.html) · live at [crate.naklios.dev/guide/](https://crate.naklios.dev/guide/).
 
-**How it works** (on the card and in the top bar) opens a short explainer with the privacy promise and the three steps.
+## What it is
 
-**Full illustrated walk-through** — every stage, the folder UI, backup, the security model: [`guide/`](guide/index.html), also live at [crate.naklios.dev/guide/](https://crate.naklios.dev/guide/).
+- **A file manager from the first second.** Sidebar (All files · Recent · Photos · Devices · Backup), search, Upload + New folder; setup is a card inside the same frame. Rename, drag-drop, text/image preview, per-file history. Keyboard-navigable, phone-sized, light or dark with your system.
+- **Encrypted in the tab.** AES-256-GCM in 8 MiB chunks with per-file data keys, wrapped by a PBKDF2 master key (600 000 iterations); an HMAC-SHA256 signed, rollback-anchored manifest that fails closed. [`docs/encryption-model.md`](docs/encryption-model.md).
+- **Your storage.** The carrier Worker holds only an R2 binding and sees ciphertext; delete it and access ends. Or bring your own bucket — we never see your credentials.
+- **Same folder everywhere.** Same URL on your phone (~15 s sync). **Backup → Export everything** zips the lot (streams to disk when large). [`docs/backup.md`](docs/backup.md).
+- **Optional desktop daemon** — [`crate-agent`](https://github.com/NakliTechie/crate-agent) mirrors the folder to plaintext `~/crate/` on macOS / Linux. Pair it from **Devices**.
+- **One static HTML file** plus small ESM modules, no build step. **AGPL-3.0.** Encryption is [`lib/crypto.js`](lib/crypto.js); every network call is [`lib/bucket.js`](lib/bucket.js); the creds format is [`lib/credsfile.js`](lib/credsfile.js). Read them.
 
 ## Unlocking
 
@@ -51,7 +42,7 @@ The credentials file is the default path; there's a fallback if you lost it:
 | Passphrase + your details (one-click: Worker URL + carrier secret; own bucket: the 4 bucket strings) | "No file? Enter the details manually." |
 | Nothing | Can't recover — v1 has no recovery credential. Back up first. |
 
-Skipped the download? **Backup → Download credentials file** re-emits it any time after unlock.
+Skipped the download? **Backup → Download credentials file** re-emits it any time.
 
 ## Architecture
 
@@ -104,7 +95,7 @@ Structural checks (also run on every push via GitHub Actions). The real gate is 
 
 ## Versioning
 
-Crate is **v1** — frozen, because other naklios apps bind against it: the bucket wire format (encryption envelope, `.crate/crate.json` schema, manifest shape), the 9-method [`lib/crate.js`](lib/crate.js) ESM API, the `.crate-creds` format, and the CRATE-PAIR pairing protocol. Additive changes bump the minor; breaking ones bump the major. History: [`CHANGELOG.md`](CHANGELOG.md).
+Crate is **v1.x** — the v1 surface is frozen, because other naklios apps bind against it: the bucket wire format (encryption envelope, `.crate/crate.json` schema, manifest shape), the 9-method [`lib/crate.js`](lib/crate.js) ESM API, the `.crate-creds` format, and the CRATE-PAIR pairing protocol. Additive changes bump the minor; breaking ones bump the major. History: [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Licence
 

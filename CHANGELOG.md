@@ -2,7 +2,9 @@
 
 All notable changes to Crate. Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning follows [SemVer](https://semver.org/spec/v2.0.0.html); see the Versioning section in the README for what counts as breaking.
 
-## [Unreleased]
+## [1.1.0] — 2026-09-12
+
+Minor, not major: the manifest gained an optional signed key, v1 objects stay readable, every new check fails closed, and the 9-method ESM API, the `.crate-creds` format and CRATE-PAIR are unchanged. New writes use the v2 object framing; crate-agent ≥ v1.2.0 reads and writes it byte-identically.
 
 ### Changed — the shell is the landing (file-manager-first redesign)
 
@@ -34,6 +36,20 @@ The page opens as a file manager, not as a setup wizard. A persistent shell — 
 
 Found on the live-site walk of the redesign: the passphrase stage shows five word chips and says "write them down", but the passphrase is stored dash-joined (`sphere-cancel-scan-blanket-interest`). Typing the words with spaces on unlock failed with `manifest: decrypt failed: OperationError`. Every unlock path (credentials file, manual details, refresh-resume) now tries the typed form, then spaces→dashes and dashes→spaces, and adopts the one that opens (`lib/passphrase.js`, `test/passphrase.test.mjs`). Only wrong-passphrase failures are retried; network and schema errors are not. The stage now says the passphrase is the five words joined with hyphens and shows the exact string to type under the chips (the desktop daemon's `pair` prompt takes only that form); a wrong passphrase reads as a sentence instead of an `OperationError`.
 
+### Security — audit follow-through (May 2026, unreleased until now)
+
+- **Manifest signatures fail closed.** `manifest.loadFromBytes` now verifies the HMAC chain it previously only computed; an invalid or broken chain refuses to load instead of materialising a tree. Held back in May for the cross-surface interop gate; the daemon has carried the same check since.
+- **H1 propagated to export.** `export.js` verifies each fetched object's leading IV against the manifest-signed `content_iv` before decrypting (constant-time), as `Crate.read()` and the folder's download/preview already did — a replayed older object can no longer land stale plaintext in a backup zip.
+- **H2 propagated to Refresh.** The folder's manual Refresh runs the rollback-anchor check (`loadAnchor → validate → saveAnchor`) before trusting a re-fetched manifest, matching `Crate.open`, the 412-replay and `SyncClient`.
+- **Partial-upload orphans.** A batch upload that fails mid-way now flushes the events already appended, so objects that did reach the bucket are recorded rather than orphaned; the banner reports the partial count.
+
+### Added — May 2026
+
+- **Recovery-credential foundation (T1, phases 1–2).** `lib/recovery.js` restored, dual-wrap key derivation in `lib/crypto.js`, and the `.crate/crate.json` v1.1 schema (`passphrase_wrap` + `recovery_wrap`) parsed and written by `lib/cratejson.js`; `Crate.open` takes either branch. `Crate.bootstrap()` still writes v1.0 — the wizard stage and the unlock-via-recovery route are the open phases 3–8.
+- **Send to NakliOS.** Opened by NakliOS in handoff mode (`?naklios-handoff=v1`, framed, origin allow-listed to `https://naklios.dev`), the Done stage offers a primary button that posts the encrypted `.crate-creds` envelope to the parent — strict ack provenance (origin + source + nonce), 15 s timeout, explicit click only. CSP `frame-ancestors` opened from `'none'` to `'self' https://naklios.dev` for exactly this.
+- **Delete confirmation is an in-app modal** (`renderDeleteConfirmModal`), keyboard-reachable, instead of the browser's blocking popup; `smoke.sh` refuses a native `confirm()`.
+- **Landing-first welcome and the "What is Crate?" explainer** (superseded by the shell redesign above, kept here for the record): the welcome stage stopped rendering as "step 1 of 6", and the three-point privacy promise was written once and shared with the explainer.
+
 ### Changed — chunked object framing (v2)
 
 Files are now encrypted as independent AES-256-GCM chunks (8 MiB plaintext each) rather than one blob, so the per-chunk memory ceiling no longer scales with file size and each chunk can later be uploaded as its own R2 multipart part. `lib/crypto.js` gains `sealObject` / `openObject`, the only producer and consumer of an `objects/{uuid}` body; the four read sites (`Crate.read`, folder download, folder preview, export) and three write sites that each carried their own copy of the parse-and-verify logic now share them.
@@ -42,7 +58,7 @@ Files are now encrypted as independent AES-256-GCM chunks (8 MiB plaintext each)
 - **Manifest `create` / `update` events gain an optional `chunk_size`.** Its presence is the v1/v2 discriminator and it lives inside the HMAC-signed event, so the bucket cannot change a file's format. It is per-version: an `update` without it reverts the entry to v1, so an older single-blob writer stays correct. v1 events are emitted byte-identically (the key is omitted, not `null`).
 - **v1 objects remain readable** through the same entry point; a file becomes v2 on its next write. No migration pass.
 - Tests: `test/chunked-crypto.test.mjs` (round-trips at chunk boundaries, 14 tamper classes, v1 compatibility, AAD canonical form) and `test/manifest-chunked.test.mjs`. `docs/encryption-model.md` updated in the same change.
-- **Cross-surface:** crate-agent does not yet speak v2. Until it does, files written by the browser are unreadable by the daemon (fail-closed, not silent). See `plan/2026-09-10-worker-carrier-onboarding.md` §5.3.
+- **Cross-surface:** crate-agent v1.2.0+ seals and opens v2 objects byte-identically (`test/cross-surface-daemon.test.mjs` pins a daemon-sealed fixture); v1.3.x adds the carrier transport and `pair --carrier`. An older daemon fails closed on v2 objects rather than reading them wrong.
 
 ## [1.0.2] — 2026-05-22
 
