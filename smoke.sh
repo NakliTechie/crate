@@ -147,6 +147,13 @@ fi
 if grep -qE '(^|[^[:alnum:]_])(window\.)?confirm\(' lib/folder.js; then
   echo "FAIL: lib/folder.js uses a native confirm() popup"; exit 1
 fi
+# No native prompt() either — New folder / Rename / Pair go through lib/dialog.js (2026-09-12).
+if grep -qE '(^|[^[:alnum:]_])(window\.)?prompt\(' lib/folder.js lib/onboarding.js; then
+  echo "FAIL: a native prompt() popup survives — use formDialog/promptDialog from lib/dialog.js"; exit 1
+fi
+if ! grep -qE "^export (async )?function (formDialog|promptDialog)\b" lib/dialog.js; then
+  echo "FAIL: lib/dialog.js missing formDialog/promptDialog exports"; exit 1
+fi
 if ! grep -q "renderDeleteConfirmModal" lib/folder.js; then
   echo "FAIL: lib/folder.js missing the in-app delete confirmation modal"; exit 1
 fi

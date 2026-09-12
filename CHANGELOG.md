@@ -2,6 +2,14 @@
 
 All notable changes to Crate. Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning follows [SemVer](https://semver.org/spec/v2.0.0.html); see the Versioning section in the README for what counts as breaking.
 
+## [Unreleased]
+
+### Changed — no more browser prompts
+
+- **New folder**, **Rename** and **Pair an agent** open an in-app dialog (`lib/dialog.js`: labelled fields, inline validation while you type, Enter confirms, Escape cancels, focus trapped and returned) instead of `window.prompt()`. The browser prompt ignored the theme, blocked the tab, and on a phone a mis-aimed tap froze the renderer during the 2026-09-10 walk.
+- Names are checked as you type: empty, slashes, `.`/`..`, and — new — a name already present in the folder ("Something called “Photos” is already here"), closing the "mkdir conflict" confusion from the May behavioural audit. Pair asks for the transport URL and the Grant in one dialog.
+- `smoke.sh` refuses a native `prompt()` the way it already refused `confirm()`.
+
 ## [1.1.0] — 2026-09-12
 
 Minor, not major: the manifest gained an optional signed key, v1 objects stay readable, every new check fails closed, and the 9-method ESM API, the `.crate-creds` format and CRATE-PAIR are unchanged. New writes use the v2 object framing; crate-agent ≥ v1.2.0 reads and writes it byte-identically.
