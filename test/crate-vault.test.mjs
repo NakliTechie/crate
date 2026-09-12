@@ -166,3 +166,53 @@ store.clear();
   viaPhrase.close();
 }
 console.log("OK: v1.0 vault migrates to v1.1 on enableRecovery; key and files unchanged; phrase opens it");
+
+// --- rekey: new content key, data keys re-wrapped, chain re-signed, anchor accepts via generation
+store.clear();
+{
+  const { Manifest: M2 } = await import("../lib/manifest.js");
+  const anchor = await import("../lib/anchor.js");
+  const a = await Crate.bootstrap({ bucketConfig, credentials, passphrase: PASS, recoveryEntropy: entropy });
+  await a.write("/one.txt", new TextEncoder().encode("one"));
+  await a.write("/two.txt", new TextEncoder().encode("two"));
+  const oldKeyHex = Buffer.from(a._masterKey).toString("hex");
+  const objectsBefore = [...store.keys()].filter((k) => k.includes("/objects/")).map((k) => [k, store.get(k).etag]);
+  const before = a._manifest.events.map((e) => e.sig);
+  const priorAnchor = a._manifest.tail();
+  assert.equal(priorAnchor.generation, 0);
+
+  const r = await a.rekey({ passphrase: PASS });
+  assert.equal(r.generation, 1);
+  assert.notEqual(Buffer.from(a._masterKey).toString("hex"), oldKeyHex);
+  assert.equal(a.hasRecovery, false, "recovery slot dropped — a new phrase must be set");
+  assert.equal(new TextDecoder().decode(await a.read("/two.txt")), "two", "reads work on the live instance");
+  // every event re-signed, one rekey event appended, objects untouched
+  assert.equal(a._manifest.events.length, before.length + 1);
+  assert.ok(a._manifest.events.slice(0, -1).every((e, i) => e.sig !== before[i]));
+  assert.equal(a._manifest.events.at(-1).op, "rekey");
+  assert.deepEqual([...store.keys()].filter((k) => k.includes("/objects/")).map((k) => [k, store.get(k).etag]), objectsBefore);
+  a.close();
+
+  // the old phrase no longer opens; the passphrase does, and the folder is intact
+  await assert.rejects(Crate.open({ bucketConfig, credentials, recoveryEntropy: entropy }), /no recovery phrase/);
+  const b = await Crate.open({ bucketConfig, credentials, passphrase: PASS });
+  assert.equal(new TextDecoder().decode(await b.read("/one.txt")), "one");
+  assert.equal(b._manifest.generation(), 1);
+  const events = b._manifest.events.map((e) => ({ ...e }));
+  const bKey = b._masterKey.slice();
+  b.close();
+
+  // a device anchored before the re-key sees a "fork" at the old sig but a higher generation → accepted
+  const v = anchor.validate(events, { count: priorAnchor.count, lastSig: priorAnchor.lastSig, generation: 0 });
+  assert.equal(v.ok, true); assert.equal(v.rekeyed, true); assert.equal(v.anchor.generation, 1);
+  // a replay of the pre-re-key manifest (generation 0) against the post-re-key anchor is refused
+  const old = new M2(); for (const e of events.slice(0, -1)) old.events.push({ ...e, sig: "old" + e.sig });
+  const v2 = anchor.validate(old.events, { count: events.length, lastSig: events.at(-1).sig, generation: 1 });
+  assert.equal(v2.ok, false);
+  // a forged chain claiming generation 2 without the key still fails signature verification before the anchor is consulted
+  const forged = events.map((e) => ({ ...e }));
+  forged.push({ v: 1, ts: Date.now(), op: "rekey", generation: 2, prev_sig: forged.at(-1).sig, sig: "forged" });
+  const m3 = new M2(); m3.events = forged;
+  assert.equal((await m3.verify(bKey)).ok, false);
+}
+console.log("OK: rekey — fresh content key, data keys re-wrapped, chain re-signed with a generation the anchor accepts; replay refused");

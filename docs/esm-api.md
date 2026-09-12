@@ -71,6 +71,15 @@ Re-wraps the content key under a new passphrase and writes
 recovery slot, if any, is carried over; no object or manifest byte
 changes. Throws `CrateError` mentioning "another device" on a 412.
 
+### `crate.rekey({ passphrase })` — v1.2
+
+Full re-key: fresh content key, every data key re-wrapped, manifest
+re-signed with a `rekey` event, `crate.json` rewritten with a passphrase
+slot under the new key. Objects untouched. The recovery slot is dropped —
+call `enableRecovery` with fresh entropy afterwards. Returns
+`{ generation }`. See encryption-model.md § Re-keying for what other
+devices and the daemon do.
+
 ### `crate.enableRecovery(recoveryEntropy, { passphrase? })` — v1.1
 
 Adds or replaces the recovery slot (same conditional write). A v1.0

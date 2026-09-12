@@ -278,6 +278,12 @@ for view in all recent photos trash devices backup; do
     echo "FAIL: index.html sidebar missing view '$view'"; exit 1
   fi
 done
+if ! grep -qE "^export (async )?function rekeyFolder\b" lib/rekey.js; then
+  echo "FAIL: lib/rekey.js missing rekeyFolder"; exit 1
+fi
+if ! grep -q "generation" lib/anchor.js; then
+  echo "FAIL: lib/anchor.js does not know re-key generations"; exit 1
+fi
 if ! grep -qE "^export (async )?function (sealVault|openVault|rewrapVault)\b" lib/vault.js; then
   echo "FAIL: lib/vault.js missing sealVault/openVault/rewrapVault"; exit 1
 fi

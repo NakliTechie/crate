@@ -102,7 +102,7 @@ The rollback anchor from the 2026-05 audit (H1) is unchanged in meaning: the obj
 {"v":1,"ts":"2026-05-21T15:02:00Z","op":"delete","path":"/notes/foo.md","uuid":"01JFX…","prev_sig":"def…","sig":"ghi…"}
 ```
 
-Six event kinds: `create`, `update`, `delete`, `move`, `mkdir`, and since v1.2 `purge`. Materialising the manifest means folding the event stream into a final `Map<path, entry>` — last write wins per path; `move` rewrites the path; `delete` removes; `mkdir` records empty folders; `purge` is invisible to the tree.
+Seven event kinds: `create`, `update`, `delete`, `move`, `mkdir`, and since v1.2 `purge` and `rekey`. Materialising the manifest means folding the event stream into a final `Map<path, entry>` — last write wins per path; `move` rewrites the path; `delete` removes; `mkdir` records empty folders; `purge` is invisible to the tree.
 
 **Trash.** The folder UI's Delete appends the `delete` event but leaves `objects/{uuid}` in the bucket for 30 days. Folding the *deleted* side of the same stream (`materialiseTrash`) lists those files with the keys needed to read them; **Restore** is a plain `create` with the same uuid and keys under the old path (or `name (restored).ext`), so every reader — the daemon included — understands it without knowing about trash. **Delete forever**, **Empty trash** and the 30-day sweep (run by whichever browser opens the folder) delete the object and append `purge {uuid}`, which readers that predate it ignore. A daemon-side delete still removes bytes at once; restoring such a file from the browser reports that its data is gone and purges the entry. `Crate.remove()` in the ESM API deletes the object immediately, as before.
 
@@ -132,6 +132,14 @@ Two surfaces (browser tab + daemon, or two browser tabs) can race on manifest wr
 4. If R2 returns 412 (precondition failed): another writer beat us. Re-GET, splice our local events on top of the fresh manifest, re-sign, retry. Up to 3 times.
 
 The browser side is `_flushManifest()` in `lib/crate.js`; the daemon side is `putManifest()` in `internal/syncer/syncer.go`. Same algorithm, symmetric.
+
+## Re-keying
+
+**Backup → Re-key folder** mints a fresh content key, re-wraps every per-file data key under it (unwrap with the old, wrap with the new; AAD unchanged), re-signs the whole manifest under it and appends `{"op":"rekey","generation":n+1}`, then rewrites `crate.json` with a `passphrase_wrap` under the new key. Object bodies are never touched. Write order is manifest → key file, both `If-Match`; a failed key-file write puts the old manifest back.
+
+The rollback anchor (§ manifest) records `generation` alongside `{count, lastSig}`. A re-signed chain fails the anchor's sig check at the anchor point — a fork — and is accepted only if its generation is higher than the anchor's. A bucket-only attacker cannot produce that: the `rekey` event is signed with the new content key, which `crate.json` yields only to the passphrase (or the recovery phrase). Replaying the pre-re-key `crate.json` + manifest brings generation n back → refused. crate-agent ≥ 1.4.0 applies the same rule.
+
+What re-keying gives you: a folder whose old key — however it leaked, including through the old passphrase + old `crate.json` of a migrated v1.0 vault — no longer opens anything. What it costs: the recovery slot is replaced (a new phrase is shown at once; write it down), every other device reopens with the passphrase, a running daemon restarts, and the per-device search index rebuilds.
 
 ## Recovery phrase
 
