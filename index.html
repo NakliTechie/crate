@@ -545,6 +545,17 @@
         background: var(--surface-2); color: var(--muted);
       }
       .folder-row-dir .folder-icon { background: var(--accent-soft); color: var(--accent); }
+      /* file rows: the icon gives way to a checkbox on hover / selection */
+      .folder-icon-pick { position: relative; cursor: default; }
+      .folder-check { position: absolute; left: 50%; top: 50%; width: 18px; height: 18px; margin: 0; transform: translate(-50%, -50%); opacity: 0; cursor: pointer; accent-color: var(--accent); }
+      .folder-icon-pick { cursor: pointer; }
+      .folder-check:checked, .folder-row:hover .folder-check, .folder-row:focus-within .folder-check, .has-selection .folder-check { opacity: 1; }
+      .folder-icon-pick:has(.folder-check:checked) > svg, .folder-row:hover .folder-icon-pick > svg, .folder-row:focus-within .folder-icon-pick > svg, .has-selection .folder-icon-pick > svg { visibility: hidden; }
+      .folder-row.selected { background: var(--accent-soft); }
+      .folder-row.selected:hover { background: var(--accent-soft); }
+      @media (hover: none) { .folder-check { opacity: 1; } .folder-icon-pick > svg { visibility: hidden; } }
+      .selection-bar .selection-count { display: flex; align-items: center; gap: 0.6rem; font-weight: 600; }
+      .selection-bar .btn-link { font-weight: 500; font-size: 0.9rem; }
       .folder-main { min-width: 0; display: flex; flex-direction: column; gap: 0.05rem; }
       .folder-name { color: var(--text); font-size: 0.95rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       .folder-sub { font-size: 0.78rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

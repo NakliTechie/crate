@@ -13,6 +13,10 @@ All notable changes to Crate. Format loosely follows [Keep a Changelog](https://
 - ESM API (additive): `Crate.open({ recoveryEntropy })`, `crate.setPassphrase(newPassphrase)`, `crate.enableRecovery(entropy)`, `crate.hasRecovery`.
 - `lib/vault.js`: `sealVault` / `openVault` / `rewrapVault` — the one place that knows the key slots; unlock-via-phrase (phase 5) and enable-recovery (phase 6) build on it. Tests: `test/vault.test.mjs`, `test/crate-vault.test.mjs` (bootstrap + open by either credential against an in-memory bucket, wrong credential named, legacy v1.0 still opens).
 
+### Added — multi-select
+
+- Tick files (the icon cell becomes a checkbox on hover; shift-click selects a range; **Select all**; Escape clears) and act on the lot: **Download** (a zip through the export path, streamed to disk when the browser can), **Move to…** (a typed destination, existing folders listed, created if new; name clashes refused before anything moves), **Delete** (one confirmation naming the files). Folders stay single-action for now.
+
 ### Changed — no more browser prompts
 
 - **New folder**, **Rename** and **Pair an agent** open an in-app dialog (`lib/dialog.js`: labelled fields, inline validation while you type, Enter confirms, Escape cancels, focus trapped and returned) instead of `window.prompt()`. The browser prompt ignored the theme, blocked the tab, and on a phone a mis-aimed tap froze the renderer during the 2026-09-10 walk.
