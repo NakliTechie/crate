@@ -278,6 +278,12 @@ for view in all recent photos devices backup; do
     echo "FAIL: index.html sidebar missing view '$view'"; exit 1
   fi
 done
+if ! grep -qE "^export (async )?function (sealVault|openVault|rewrapVault)\b" lib/vault.js; then
+  echo "FAIL: lib/vault.js missing sealVault/openVault/rewrapVault"; exit 1
+fi
+if ! grep -q "recovery: renderRecovery" lib/onboarding.js; then
+  echo "FAIL: lib/onboarding.js missing the recovery stage"; exit 1
+fi
 if ! grep -q "entriesForView" lib/folder.js; then
   echo "FAIL: lib/folder.js missing entriesForView — Recent/Photos views not wired"; exit 1
 fi
@@ -350,5 +356,7 @@ node --no-warnings test/manifest-chunked.test.mjs
 node --no-warnings test/cross-surface-daemon.test.mjs
 node --no-warnings test/carrier-transport.test.mjs
 node --no-warnings test/passphrase.test.mjs
+node --no-warnings test/vault.test.mjs
+node --no-warnings test/crate-vault.test.mjs
 
 echo "OK: crate v1"

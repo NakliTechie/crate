@@ -4,6 +4,12 @@ All notable changes to Crate. Format loosely follows [Keep a Changelog](https://
 
 ## [Unreleased]
 
+### Added — recovery phrase (T1, phases 3–4)
+
+- **New folders are v1.1 vaults.** `Crate.bootstrap()` mints a random content key and writes `.crate/crate.json` with a `passphrase_wrap` and — when the user keeps a recovery phrase — a `recovery_wrap`; either slot recovers the key. `Crate.open()` takes `passphrase` or `recoveryEntropy`. v1.0 vaults open exactly as before; the daemon has parsed v1.1 since v1.2.0 (`internal/cratejson`). The wizard's first-time setup now goes through `Crate.bootstrap()` instead of its own copy.
+- **Recovery stage** between passphrase and Done on both routes: 24 BIP-39 words (`lib/recovery.js`, 256 bits of entropy + checksum), type three back to continue, **Different words**, **Copy phrase**, or **Skip for now** (passphrase-only vault; enabling later is phase 6). The grid never elides a word — 2 columns on phones, 4 on desktop. Done's reminder and the save acknowledgement mention the phrase when it was kept.
+- `lib/vault.js`: `sealVault` / `openVault` / `rewrapVault` — the one place that knows the key slots; unlock-via-phrase (phase 5) and enable-recovery (phase 6) build on it. Tests: `test/vault.test.mjs`, `test/crate-vault.test.mjs` (bootstrap + open by either credential against an in-memory bucket, wrong credential named, legacy v1.0 still opens).
+
 ### Changed — no more browser prompts
 
 - **New folder**, **Rename** and **Pair an agent** open an in-app dialog (`lib/dialog.js`: labelled fields, inline validation while you type, Enter confirms, Escape cancels, focus trapped and returned) instead of `window.prompt()`. The browser prompt ignored the theme, blocked the tab, and on a phone a mis-aimed tap froze the renderer during the 2026-09-10 walk.
