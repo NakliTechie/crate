@@ -135,3 +135,34 @@ store.clear();
   after.close();
 }
 console.log("OK: setPassphrase / enableRecovery re-wrap the key slots; objects untouched; etag tracked");
+
+// --- v1.0 vault → enableRecovery migrates to v1.1 without re-keying ----
+store.clear();
+{
+  const salt = cryptoLib.randomSalt();
+  const mk = await cryptoLib.deriveMasterKey(PASS, salt);
+  const base = (await Crate.bootstrap({ bucketConfig, credentials, passphrase: "throwaway" }))._bucketBase; // just to learn the base
+  store.clear();
+  store.set(base + cratejson.CRATE_PATH, { body: cratejson.build({ salt }), etag: '"v10"' });
+  const man = new Manifest();
+  store.set(base + ".crate/manifest.jsonl.enc", { body: await man.encryptToBytes(mk), etag: '"m10"' });
+
+  const legacy = await Crate.open({ bucketConfig, credentials, passphrase: PASS });
+  await legacy.write("/old.txt", new TextEncoder().encode("old"));
+  await assert.rejects(legacy.enableRecovery(entropy), /v1\.0 vault; pass \{ passphrase \}/);
+  await legacy.enableRecovery(entropy, { passphrase: PASS });
+  assert.equal(legacy.hasRecovery, true);
+  const migrated = cratejson.parse(store.get(base + cratejson.CRATE_PATH).body);
+  assert.equal(migrated.version, "1.1");
+  // key unchanged: the same passphrase still opens, files readable, phrase opens too
+  assert.equal(Buffer.from(legacy._masterKey).toString("hex"), Buffer.from(mk).toString("hex"));
+  legacy.close();
+  const again = await Crate.open({ bucketConfig, credentials, passphrase: PASS });
+  assert.equal(Buffer.from(again._masterKey).toString("hex"), Buffer.from(mk).toString("hex"));
+  assert.equal(new TextDecoder().decode(await again.read("/old.txt")), "old");
+  again.close();
+  const viaPhrase = await Crate.open({ bucketConfig, credentials, recoveryEntropy: entropy });
+  assert.equal(new TextDecoder().decode(await viaPhrase.read("/old.txt")), "old");
+  viaPhrase.close();
+}
+console.log("OK: v1.0 vault migrates to v1.1 on enableRecovery; key and files unchanged; phrase opens it");
