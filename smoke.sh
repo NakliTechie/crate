@@ -231,7 +231,7 @@ fi
 if ! grep -q "\.landing" index.html; then
   echo "FAIL: index.html missing .landing styles"; exit 1
 fi
-# Concise "What is Crate?" explainer — the modal that auto-opens once.
+# Concise "What is Crate?" explainer — reached from "How it works".
 if ! grep -q "openHelpModal" lib/onboarding.js; then
   echo "FAIL: lib/onboarding.js missing openHelpModal — concise help modal not wired"; exit 1
 fi
@@ -248,12 +248,34 @@ fi
 if ! grep -q "Plan for backups" lib/onboarding.js; then
   echo "FAIL: setup guide missing 'Plan for backups' step 8"; exit 1
 fi
-# First-visit auto-open of the explainer (one time, localStorage-gated).
-if ! grep -q "HELP_SEEN_KEY" lib/onboarding.js; then
-  echo "FAIL: lib/onboarding.js missing HELP_SEEN_KEY — first-visit auto-open not wired"; exit 1
+# Shell-first landing (2026-09-11): the explainer no longer auto-opens;
+# the shell frames the landing card and "How it works" reaches the modal
+# from the card and the topbar. The shell + icon modules must exist and
+# the folder UI must drive the shell's views.
+if grep -q "maybeAutoOpenHelp" lib/onboarding.js; then
+  echo "FAIL: lib/onboarding.js still auto-opens the help modal — removed in the shell redesign"; exit 1
 fi
-if ! grep -q "maybeAutoOpenHelp" lib/onboarding.js; then
-  echo "FAIL: lib/onboarding.js missing maybeAutoOpenHelp — first-visit auto-open not wired"; exit 1
+if ! grep -qE "^export function createShell\b" lib/shell.js; then
+  echo "FAIL: lib/shell.js missing createShell export"; exit 1
+fi
+if ! grep -qE "^export function (icon|fileIconName)\b" lib/icons.js; then
+  echo "FAIL: lib/icons.js missing icon/fileIconName exports"; exit 1
+fi
+for id in shell-search shell-help shell-menu-btn side-stats; do
+  if ! grep -q "id=\"$id\"" index.html; then
+    echo "FAIL: index.html missing shell element #$id"; exit 1
+  fi
+done
+for view in all recent photos devices backup; do
+  if ! grep -q "data-view=\"$view\"" index.html; then
+    echo "FAIL: index.html sidebar missing view '$view'"; exit 1
+  fi
+done
+if ! grep -q "entriesForView" lib/folder.js; then
+  echo "FAIL: lib/folder.js missing entriesForView — Recent/Photos views not wired"; exit 1
+fi
+if ! grep -q "openHelp:" lib/onboarding.js; then
+  echo "FAIL: lib/onboarding.js wizard does not expose openHelp for the shell topbar"; exit 1
 fi
 
 # --- Export feature (tiered backup download) -------------------------

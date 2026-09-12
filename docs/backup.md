@@ -70,7 +70,7 @@ Pick whichever's faster:
 You rotated your R2 token in the Cloudflare dashboard (or revoked the old one). To pick up the new credentials in Crate:
 
 1. Refresh the browser tab (or open a new one).
-2. Choose **Unlock an existing folder** on Welcome.
+2. Choose **Already set up? Open your folder** on the start screen.
 3. Enter the same bucket name + Account ID + passphrase, with the **new** Access Key + Secret. (One-click folder: set a new `CARRIER_SECRET` on the Worker instead, then unlock manually with the Worker URL + the new secret + your passphrase, and re-download the creds file.)
 4. The folder unlocks against the new credentials.
 

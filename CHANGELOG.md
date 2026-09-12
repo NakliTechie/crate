@@ -4,6 +4,18 @@ All notable changes to Crate. Format loosely follows [Keep a Changelog](https://
 
 ## [Unreleased]
 
+### Changed — the shell is the landing (file-manager-first redesign)
+
+The page opens as a file manager, not as a setup wizard. A persistent shell — topbar (wordmark, search, actions) and sidebar (**All files · Recent · Photos · Devices · Backup**) — frames every state. Locked, the sidebar is dimmed and the content area holds one card: a headline, **Get started — about a minute**, and **Already set up? Open your folder**. The wizard's stages render in that same column; at Done the folder replaces the card and the sidebar lights up. Nobody leaves the frame they landed in.
+
+- **Light theme by default**, dark under `prefers-color-scheme: dark`. One accent, working on the primary action, focus and the active view; warm neutral ramp elsewhere (`index.html` tokens). Direction: Calm.
+- **Landing copy** drops the jargon at first sight: no bucket / R2 / Worker / API token / AGPL on the first screen. Prerequisites live at the top of the carrier stage, where they apply. **Set up with your own bucket** becomes the **Use a bucket you already have** link under the card. The **What is Crate?** explainer no longer auto-opens on first visit — **How it works** (card + topbar) opens it on demand.
+- **Folder UI**: toolbar is **Upload** + **New folder**; search moves to the topbar; Refresh and Lock move to the `···` menu; **Pair an agent** lives in the **Devices** view; the credentials file and **Export everything** live in the **Backup** view, next to the passphrase reminder. Rows show Name · Modified · Size with a column header; row actions replace the metadata on hover (always visible on touch). File-type icons are inline SVG (`lib/icons.js`) instead of emoji.
+- **Recent** (last 50 files by manifest timestamp, with the parent folder under each name) and **Photos** (every image, with a count in the sidebar) are derived from the manifest — no new events, no thumbnails (that would mean decrypting every image on open).
+- Narrow screens: the sidebar becomes a scrollable row of view pills under the topbar; the locked state hides it and the search field so the card fills the screen. The three-row toolbar wrap at 375 px is gone with the toolbar.
+- New modules `lib/shell.js` (topbar + sidebar wiring) and `lib/icons.js`; `FolderUI` gains `view`, `setView()`, `entriesForView()` and takes `opts.shell`; the wizard exposes `openHelp()`. `smoke.sh` checks the shell contract instead of the removed auto-open.
+- Not changed: the wizard stages themselves, the wire format, the ESM API, `.crate-creds`, pairing.
+
 ### Added — one-click onboarding through a carrier Worker
 
 - **Set up with one click** on the landing page: a new `carrier` route (`welcome → carrier → passphrase → done`) replaces the four manual stages (bucket, credentials, CORS, account ID) with Cloudflare's Deploy button pointed at [`crate-carrier`](https://github.com/NakliTechie/crate-carrier). The Deploy flow provisions the R2 bucket itself — verified: no API token is created or entered anywhere.

@@ -395,26 +395,25 @@
               </li>
             </ul>
             <div class="mock-landing-actions">
-              <button class="mock-btn block primary">Set up with one click</button>
-              <button class="mock-btn block">Set up with your own bucket</button>
-              <button class="mock-btn block">Unlock an existing folder</button>
+              <button class="mock-btn block primary">Get started — about a minute</button>
+              <button class="mock-btn block">Already set up? Open your folder</button>
             </div>
-            <p class="mock-landing-help"><span class="mock-link">New here? See how Crate works</span></p>
+            <p class="mock-landing-help"><span class="mock-link">How it works</span> · <span class="mock-link">Use a bucket you already have</span></p>
             <p class="mock-landing-meta">Before you start — you'll need: a free Cloudflare account · a free GitHub account · a passphrase you'll remember.</p>
           </div>
         </div>
       </div>
 
       <p>
-        On your very first visit, a short <strong>What is Crate?</strong> explainer opens over this screen automatically — the same privacy promise plus how Crate works in three steps, with a <strong>Full setup guide</strong> button that expands the detailed Cloudflare walk-through. It auto-opens only once; afterwards you can reopen it any time from the <strong>New here? See how Crate works</strong> link.
+        The page opens as a file manager — sidebar, search, and this card in the middle. <strong>How it works</strong> (on the card and in the top bar) opens a short explainer: the privacy promise plus how Crate works in three steps, with a <strong>Full setup guide</strong> button that expands the detailed Cloudflare walk-through.
       </p>
       <p>
-        There are two ways in. <strong>Set up with one click</strong> is the one to use unless you already run your own bucket and API token. (If you've onboarded already and you're back, see <a href="#unlock">section 5</a>.)
+        There are two ways in. <strong>Get started</strong> is the one to use unless you already run your own bucket and API token (then <strong>Use a bucket you already have</strong>, under the card). (If you've onboarded already and you're back, see <a href="#unlock">section 5</a>.)
       </p>
 
       <h3>The one-click path</h3>
       <p>
-        Click <strong>Set up with one click</strong>. The wizard has three stages: Carrier → Passphrase → Done. "Carrier" is a tiny program (a Cloudflare Worker) that Cloudflare deploys into <em>your</em> account, holding a bucket it creates for you. It only ever sees encrypted bytes, and deleting it ends its access.
+        Click <strong>Get started</strong>. The wizard has three stages: Carrier → Passphrase → Done. "Carrier" is a tiny program (a Cloudflare Worker) that Cloudflare deploys into <em>your</em> account, holding a bucket it creates for you. It only ever sees encrypted bytes, and deleting it ends its access.
       </p>
       <ol>
         <li><strong>Copy the secret.</strong> Crate shows a connection secret it generated for you. This is <em>not</em> your passphrase — that comes later. Click <strong>Copy secret</strong>.</li>
@@ -429,7 +428,7 @@
         No API token, no CORS policy, no account ID. The only thing you paste is the secret, once. What you keep afterwards is the <code>.crate-creds</code> file (downloaded at Done) and your passphrase — nothing else.
       </div>
 
-      <h3>Set up with your own bucket (the manual path)</h3>
+      <h3>Use a bucket you already have (the manual path)</h3>
       <p>
         For people who already have a Cloudflare R2 bucket and want to point Crate at it with their own API token. Five stages: Bucket → Credentials → CORS → Passphrase → Done.
       </p>
@@ -750,7 +749,7 @@
     <section id="unlock">
       <h2><span class="num">5</span>Coming back later</h2>
       <p>
-        You closed the tab, came back tomorrow (or on your phone, or on a different laptop). Open <a href="https://crate.naklios.dev">crate.naklios.dev</a>, click <strong>Unlock an existing folder</strong>.
+        You closed the tab, came back tomorrow (or on your phone, or on a different laptop). Open <a href="https://crate.naklios.dev">crate.naklios.dev</a>, click <strong>Already set up? Open your folder</strong>.
       </p>
 
       <h3>The default path — credentials file + passphrase</h3>
@@ -766,7 +765,7 @@
         <div class="screen-body">
           <div class="mock-progress"><span class="step">welcome</span> · <span class="step current">unlock</span></div>
           <div class="mock-stage">
-            <h2>Unlock an existing folder</h2>
+            <h2>Already set up? Open your folder</h2>
             <p class="muted">Pick the credentials file you downloaded at first setup, then enter your folder passphrase. The file is useless without the passphrase.</p>
             <div style="border: 2px dashed var(--border-strong); border-radius: 8px; padding: 1.5rem 1rem; text-align: center; background: var(--surface); margin-bottom: 0.8rem;">
               <p style="margin: 0; color: var(--muted); font-size: 0.95rem;">
