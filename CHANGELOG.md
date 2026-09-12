@@ -31,7 +31,7 @@ The page opens as a file manager, not as a setup wizard. A persistent shell — 
 
 ### Fixed — the five suggested words open the folder with spaces or dashes
 
-Found on the live-site walk of the redesign: the passphrase stage shows five word chips and says "write them down", but the passphrase is stored dash-joined (`sphere-cancel-scan-blanket-interest`). Typing the words with spaces on unlock failed with `manifest: decrypt failed: OperationError`. Every unlock path (credentials file, manual details, refresh-resume) now tries the typed form, then spaces→dashes and dashes→spaces, and adopts the one that opens (`lib/passphrase.js`, `test/passphrase.test.mjs`). Only wrong-passphrase failures are retried; network and schema errors are not. The stage now shows the typed-out form under the chips, and a wrong passphrase reads as a sentence instead of an `OperationError`.
+Found on the live-site walk of the redesign: the passphrase stage shows five word chips and says "write them down", but the passphrase is stored dash-joined (`sphere-cancel-scan-blanket-interest`). Typing the words with spaces on unlock failed with `manifest: decrypt failed: OperationError`. Every unlock path (credentials file, manual details, refresh-resume) now tries the typed form, then spaces→dashes and dashes→spaces, and adopts the one that opens (`lib/passphrase.js`, `test/passphrase.test.mjs`). Only wrong-passphrase failures are retried; network and schema errors are not. The stage now says the passphrase is the five words joined with hyphens and shows the exact string to type under the chips (the desktop daemon's `pair` prompt takes only that form); a wrong passphrase reads as a sentence instead of an `OperationError`.
 
 ### Changed — chunked object framing (v2)
 
