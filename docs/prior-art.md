@@ -73,7 +73,7 @@ DCS) are covered as [cousins](#cousins) below.
 | Filename encryption | **Yes** (inside encrypted manifest — bucket sees only UUIDs) | Yes (encrypted filenames in vault) | Yes (everything is content-addressed hashes) | Yes | No | Yes |
 | Manifest signing / tamper-evidence | **Yes** — HMAC-SHA256 prev-sig chain | Vault has integrity check per file | Per-pack MAC | Per-blob MAC | No | Per-block MAC |
 | Dedup (content-addressed) | No | No | **Yes** (rolling-hash chunks) | **Yes** (rolling-hash chunks) | Optional | No |
-| Compression | No | No | **Yes** — zstd | **Yes** — zstd | Optional | No |
+| Compression | **Yes** — deflate before seal (v1.2) | No | **Yes** — zstd | **Yes** — zstd | Optional | No |
 | Key rotation | No (v1) | Yes (desktop) | repository password change | Yes | N/A | Yes (re-encrypt) |
 
 ## Recovery & access
@@ -234,7 +234,7 @@ priorities and ordering live in [`plan/pending.md`](../plan/pending.md).
   confirmation-of-file attack). Restic and Kopia have this; the
   payoff is much smaller buckets for users with image / video
   collections.
-- ~~Compression~~ — shipped in v1.2 (deflate-raw before seal, both surfaces). Zstd before encryption. Cheap win; transparent.
+- ~~Compression~~ — shipped in v1.2 (deflate-raw before seal, both surfaces).
 - **Key rotation.** Passphrase change without re-encrypting every file:
   unwrap-and-rewrap all data keys under the new master, leave file
   ciphertexts alone. Manifest gets a `rekey` event recording the
